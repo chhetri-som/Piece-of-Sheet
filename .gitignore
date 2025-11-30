@@ -1,0 +1,13 @@
+# Ignore all files in the uploads folder...
+uploads/*
+# ...but DO NOT ignore the .gitkeep file (so the folder is tracked)
+!uploads/.gitkeep
+
+# Ignore all generated assets in static...
+static/generated/*
+# ...but keep the folder structure
+!static/generated/.gitkeep
+
+# Ignore Python cache (standard practice)
+__pycache__/
+*.pyc
