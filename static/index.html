@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎸 Guitar Transcription Studio</title>
+
+  <!-- AlphaTab (sheet music rendering) -->
+  <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.js"></script>
+
+  <!-- WaveSurfer (audio waveform) -->
+  <script src="https://unpkg.com/wavesurfer.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="main-container">
+    <h1>🎵 Guitar Transcription Studio</h1>
+    <p>Upload your guitar audio file (.wav) and generate sheet music & piano roll.</p>
+
+    <!-- Upload section -->
+    <input type="file" id="audio-file-input" accept="audio/*" />
+    <button id="upload-button" disabled>Generate Music</button>
+
+    <p id="loading" style="display:none;">Processing... please wait 🎧</p>
+
+    <!-- Waveform -->
+    <h2 id="waveform-heading" style="display:none;">Audio Waveform</h2>
+    <div id="waveform-container"></div>
+
+    <!-- Piano roll -->
+    <h2 id="piano-roll-heading" style="display:none;">Piano Roll Visualization</h2>
+    <img id="piano-roll-img" alt="Piano Roll Visualization" style="display:none; max-width:100%; border-radius:8px;" />
+
+    <!-- Sheet music -->
+    <h2>Sheet Music (MusicXML)</h2>
+    <div id="alphaTab-container" style="width:100%; background:#222; color:white; border-radius:10px; padding:10px;">
+      <p>Sheet music will appear here after processing.</p>
+    </div>
+  </div>
+
+  <!-- Your custom script -->
+  <script src="script.js"></script>
+</body>
+</html>
