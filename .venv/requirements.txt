@@ -1,0 +1,17 @@
+# Create a virtual environment in your device and download the below mentioned libraries to run this project in local.
+
+# Web Framework
+flask
+
+# Machine Learning & Math
+tensorflow
+numpy
+
+# Audio to MIDI Model (Spotify's Basic Pitch)
+basic-pitch
+
+# Music Theory & File Conversion
+music21
+
+# Visualization
+matplotlib
