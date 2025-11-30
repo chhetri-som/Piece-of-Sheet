@@ -17,14 +17,19 @@ __________.__                              _____
 
 <h2>Key Features</h2>
 - <b>Audio Ingestion:</b> Supports upload of standard .wav files (we mostly work with guitar).
+
 - <b>AI-Powered Transcription:</b> Utilizes <b>Spotify's Basic Pitch</b> lightweight neural network for high-accuracy audio-to-MIDI conversion.
+  
 - <b>MusicXML Standardization:</b> Robust processing via <b>Music21</b> to quantize MIDI data and convert it into the industry-standard MusicXML format.
+
 - <b>Interactive Rendering:</b> Real-time sheet music display using <b>AlphaTab</b>, allowing users to view notation directly in the browser without external software.
+  
 - <b>Web Interface:</b> Clean, responsive UI built with HTML5, CSS3, and JavaScript.
+  
 
 <h2>Pipeline Visualization</h2>
 <div align="center">
-  <img src="./assets/FlowChart_2.png" width="300" alt="flowchart">
+  <img src="./assets/FlowChart_2.png" alt="flowchart">
   <br>
   </div>
 
