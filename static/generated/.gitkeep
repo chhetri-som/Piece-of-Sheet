@@ -1,1 +1,16 @@
-
+# ==========================================
+#  PUBLIC GENERATED ASSETS DIRECTORY
+# ==========================================
+#
+# This directory is required to serve the final output files to the frontend.
+# It stores:
+# 1. MusicXML files (.xml) for sheet music rendering.
+# 2. Piano Roll visualizations (.png).
+#
+# Context:
+# These files are served via Flask's static file server. 
+# They are the result of the ML pipeline and should be generated 
+# fresh by the application, not version controlled.
+#
+# DO NOT DELETE THIS FOLDER.
+# DO NOT COMMIT GENERATED ASSETS TO GITHUB.
