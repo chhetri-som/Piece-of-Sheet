@@ -16,6 +16,7 @@ __________.__                              _____
 <b>Piece of Sheet</b> is a web-based automated music transcription tool designed to bridge the gap between acoustic performance and written notation. By leveraging <a href="https://github.com/spotify/basic-pitch">Spotify's</a> machine learning models and robust music theory libraries, it converts raw audio files into interactive sheet music in seconds.
 
 <h2>Key Features</h2>
+
 - <b>Audio Ingestion:</b> Supports upload of standard .wav files (we mostly work with guitar).
 
 - <b>AI-Powered Transcription:</b> Utilizes <b>Spotify's Basic Pitch</b> lightweight neural network for high-accuracy audio-to-MIDI conversion.
