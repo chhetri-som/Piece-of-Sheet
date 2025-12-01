@@ -3,49 +3,142 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎸 Guitar Transcription Studio</title>
+  <title>GUITAR TRANSCRIPTION</title>
 
-  <!-- AlphaTab (sheet music rendering) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Delight', 'sans-serif'], 
+          display: ['THEBOLDFONT-FREEVERSION', 'sans-serif'], 
+        },
+        colors: {
+          'tech-black': '#09090b',
+          'tech-card': '#18181b',
+          'tech-border': '#27272a',
+          'accent': '#ffffff',
+        }
+      }
+    }
+  }
+</script>
+
   <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.js"></script>
-
-  <!-- WaveSurfer (audio waveform) -->
   <script src="https://unpkg.com/wavesurfer.js"></script>
-  <!-- Tone.js + Midi parser -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.27/dist/Midi.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
 
-<body>
-  <div class="main-container">
-    <h1>🎵 Guitar Transcription Studio</h1>
-    <p>Upload your guitar audio file (.wav) and generate sheet music & piano roll.</p>
+<body class="bg-tech-black text-gray-300 min-h-screen p-4 md:p-8 selection:bg-white selection:text-black">
 
-    <!-- Upload section -->
-    <input type="file" id="audio-file-input" accept="audio/*" />
-    <button id="upload-button" disabled>Generate Music</button>
-    <button id="play-audio-button" disabled>▶ Play Audio</button>
+  <div class="max-w-[1600px] mx-auto space-y-6">
+    
+    <header class="border-b-2 border-white/10 pb-6 flex flex-col md:flex-row justify-between items-end">
+      <div>
+        <h1 class="font-display text-7xl md:text-6xl text-white uppercase tracking-tight leading-none">
+          Guitar<br><span class="text-gray-600">Transcription</span>
+        </h1>
+      </div>
+      <div class="text-right hidden md:block">
+        <div class="font-mono text-xs text-gray-500 mb-1"></div>
+        <div id="loading" style="display:none;" class="text-white font-bold animate-pulse bg-red-600 px-2 py-1 text-xs inline-block">
+          PROCESSING AUDIO DATA...
+        </div>
+      </div>
+    </header>
 
-    <p id="loading" style="display:none;">Processing... please wait 🎧</p>
 
-    <!-- Waveform -->
-    <h2 id="waveform-heading" style="display:none;">Audio Waveform</h2>
-    <div id="waveform-container"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+      
+      <div class="lg:col-span-3 flex flex-col gap-6">
+        
+        <div class="bg-tech-card border border-tech-border p-5 rounded-none">
+          <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-3">Input Source</label>
+          
+          <input type="file" id="audio-file-input" accept="audio/*" class="hidden" />
+          
+          <button onclick="document.getElementById('audio-file-input').click()" 
+            class="w-full h-32 border-2 border-dashed border-zinc-700 hover:border-white hover:bg-white/5 transition-all group flex flex-col items-center justify-center gap-2">
+            <span class="text-2xl opacity-50 group-hover:opacity-100 transition-opacity">📂</span>
+            <span class="font-mono text-xs uppercase text-gray-400 group-hover:text-white">Select Audio File</span>
+          </button>
 
-    <!-- Piano roll -->
-    <h2 id="piano-roll-heading" style="display:none;">Piano Roll Visualization</h2>
-    <img id="piano-roll-img" alt="Piano Roll Visualization" style="display:none; max-width:100%; border-radius:8px;" />
+          <button id="upload-button" disabled 
+            class="w-full mt-4 bg-white text-black font-display font-bold uppercase py-4 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed transition-all tracking-wider">
+            Generate Sheet
+          </button>
+        </div>
 
-    <!-- Sheet music -->
-    <h2>Sheet Music (MusicXML)</h2>
-    <div id="alphaTab-container" style="width:100%; background:#222; color:white; border-radius:10px; padding:10px;">
-      <p>Sheet music will appear here after processing.</p>
+        <div id="transpose-container" style="display:none;" class="bg-tech-card border border-tech-border p- sticky top-6">
+           <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-4">Transpose</label>
+           
+           <div class="flex items-center justify-between bg-black border border-zinc-800 p-2">
+              <button id="trans-down" class="w-12 h-12 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xl border border-zinc-700 transition-colors">-</button>
+              
+              <div class="flex flex-col items-center">
+                 <span id="trans-display" class="font-display text-2xl text-white">0</span>
+                 <span class="text-[10px] font-mono text-gray-500 uppercase">Semitones</span>
+              </div>
+              
+              <button id="trans-up" class="w-12 h-12 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xl border border-zinc-700 transition-colors">+</button>
+           </div>
+        </div>
+
+        <div class="bg-tech-card border border-tech-border p-5">
+          <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-3">Playback</label>
+          <button id="play-audio-button" disabled 
+            class="w-full border border-zinc-600 text-white font-bold py-3 tracking-wider hover:bg-zinc-800 disabled:opacity-20 transition-all text-sm uppercase">
+            ▶ Play Audio
+          </button>
+          </div>
+
+      </div>
+
+      <div class="lg:col-span-9 flex flex-col gap-6">
+        
+        <div class="bg-tech-card border border-tech-border p-1 relative min-h-[140px] rounded-xl">
+          <div class="absolute top-2 left-3 z-10">
+            <h2 id="waveform-heading" style="display:none;" class="text-[10px] font-mono font-bold bg-black/80 text-white px-2 py-1 border border-zinc-800 ">
+              AUDIO WAVEFORM
+            </h2>
+          </div>
+          <div id="waveform-container" class="w-full h-32 opacity-80 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-crosshair"></div>
+        </div>
+
+        <div class="relative">
+           <h2 id="piano-roll-heading" style="display:none;" class="absolute top-2 left-3 z-10 text-[10px] font-mono font-bold bg-black/80 text-white px-2 py-1 border border-zinc-800">
+             MIDI ROLL
+           </h2>
+           <img id="piano-roll-img" style="display:none;" class="w-full border border-tech-border bg-black opacity-90 grayscale hover:grayscale-0 transition-all duration-500 rounded-xl" />
+        </div>
+
+        <div class="bg-white text-black border-4 border-gray-200 overflow-hidden relative min-h-[500px] rounded-xl">
+          <div class="bg-gray-100 border-b border-gray-300 p-2 flex justify-between items-center">
+            <div class="flex gap-2 px-2">
+              <div class="w-3 h-3 rounded-full bg-zinc-300"></div>
+              <div class="w-3 h-3 rounded-full bg-zinc-300"></div>
+            </div>
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sheet Music View</span>
+          </div>
+          
+          <div id="alphaTab-container" class="w-full h-full p-4 overflow-auto bg-white text-black">
+             <div id="alpha-placeholder" class="h-[400px] flex flex-col items-center justify-center text-gray-300 font-display text-4xl uppercase">
+                Waiting for Data...
+             </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+
   </div>
 
-  <!-- Your custom script -->
   <script src="script.js"></script>
 </body>
 </html>
-
