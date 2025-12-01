@@ -10,6 +10,9 @@
 
   <!-- WaveSurfer (audio waveform) -->
   <script src="https://unpkg.com/wavesurfer.js"></script>
+  <!-- Tone.js + Midi parser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.27/dist/Midi.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -22,6 +25,7 @@
     <!-- Upload section -->
     <input type="file" id="audio-file-input" accept="audio/*" />
     <button id="upload-button" disabled>Generate Music</button>
+    <button id="play-audio-button" disabled>▶ Play Audio</button>
 
     <p id="loading" style="display:none;">Processing... please wait 🎧</p>
 
@@ -44,3 +48,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
