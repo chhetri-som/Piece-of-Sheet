@@ -1,4 +1,4 @@
-// Get the HTML elements
+// Get HTML elements
 const fileInput = document.getElementById("audio-file-input");
 const uploadButton = document.getElementById("upload-button");
 const loadingText = document.getElementById("loading");
@@ -11,12 +11,25 @@ const waveformHeading = document.getElementById("waveform-heading");
 const pianoRollImage = document.getElementById("piano-roll-img");
 const pianoRollHeading = document.getElementById("piano-roll-heading");
 
+// Transpose elements
+const transposeContainer = document.getElementById('transpose-container');
+const btnTransDown = document.getElementById('trans-down');
+const btnTransUp = document.getElementById('trans-up');
+const transDisplay = document.getElementById('trans-display');
+
+const fileNameDisplay = document.getElementById("file-name-display");
+
+let transpositionValue = 0;
+
+
+
 let api;
 let isApiReady = false;
 let wavesurfer;
 let midiPlayerButton = null;
 
-// --- 1. Initialize AlphaTab API ---
+// 1. Initialize AlphaTab API
+
 try {
     const settings = {
         core: {
@@ -30,14 +43,15 @@ try {
     console.error("Failed to initialize AlphaTab.", e);
 }
 
-// --- 2. Initialize Wavesurfer API ---
+// 2️. Initialize Wavesurfer API
+
 try {
     wavesurfer = WaveSurfer.create({
         container: waveformContainer,
         waveColor: 'rgb(101, 163, 240)',
         progressColor: 'rgb(56, 100, 171)',
-        barWidth: 2,
-        barRadius: 1,
+        //barWidth: 2,
+        //barRadius: 1,
         responsive: true,
         height: 128
     });
@@ -45,7 +59,11 @@ try {
 } catch (e) {
     console.error("Failed to initialize Wavesurfer.", e);
 }
-// ---3. Midi player function --- 
+
+
+
+// 3️. MIDI PLAYER FUNCTION
+
 function showMidiPlayer(url) {
     if (!url) return;
 
@@ -89,19 +107,56 @@ function showMidiPlayer(url) {
         }
     };
 }
-//--- 4. Show custom message ---
+
+
+// 4️. Show Custom Message
+
 function showCustomMessage(message) {
     console.error("APP_MESSAGE:", message);
     alert(message);
 }
 
-// --- 5. Listener for File Input (to show waveform) ---
+
+// Transposition Logic (Visual Only)
+
+function updateTransposition() {
+    // Update UI Text
+    transDisplay.innerText = transpositionValue > 0 ? `+${transpositionValue}` : transpositionValue;
+
+    if (isApiReady && api) {
+        // 1. Update AlphaTab settings
+        // transpositionPitches accepts an array (one value per track). 
+        // We assume 1 track for now.
+        api.settings.notation.transpositionPitches = [transpositionValue];
+        
+        // 2. Apply settings
+        api.updateSettings();
+        
+        // 3. Re-render the score
+        api.render();
+    }
+}
+
+btnTransDown.addEventListener('click', () => {
+    transpositionValue--;
+    updateTransposition();
+});
+
+btnTransUp.addEventListener('click', () => {
+    transpositionValue++;
+    updateTransposition();
+});
+
+
+
+// 5️. File Input Change Listener
+
 fileInput.addEventListener("change", () => {
     const file = fileInput.files[0];
     if (file && wavesurfer) {
         const fileUrl = URL.createObjectURL(file);
         wavesurfer.load(fileUrl);
-        
+
         // Enable play/pause
         playAudioButton.disabled = false;
         playAudioButton.onclick = () => {
@@ -117,6 +172,13 @@ fileInput.addEventListener("change", () => {
         waveformHeading.style.display = 'block';
         uploadButton.disabled = false;
 
+        
+        // SHOW TRANSPOSE CONTROLS
+        transposeContainer.style.display = 'block';
+        
+        // RESET TRANSPOSITION ON NEW FILE
+        transpositionValue = 0;
+        transDisplay.innerText = "0";
 
         // Clear old results
         pianoRollImage.style.display = 'none';
@@ -137,9 +199,10 @@ fileInput.addEventListener("change", () => {
         uploadButton.disabled = true;
     }
 });
-       
 
-// --- 6. Listener for Upload Button (to run analysis) ---
+
+// 6️. Upload Button Click Listener
+
 if (isApiReady) {
     uploadButton.addEventListener("click", async () => {
         const file = fileInput.files[0];
@@ -152,11 +215,7 @@ if (isApiReady) {
 
         // Clear previous results
         if (api) {
-            try {
-                api.load(null);
-            } catch (e) {
-                console.warn("AlphaTab clear failed:", e);
-            }
+            try { api.load(null); } catch (e) { console.warn("AlphaTab clear failed:", e); }
         }
         pianoRollImage.style.display = 'none';
         pianoRollHeading.style.display = 'none';
@@ -197,6 +256,10 @@ if (isApiReady) {
             // Load Sheet Music
             if (data.xmlUrl && api) {
                 api.load(data.xmlUrl);
+                const placeholder = document.getElementById('alpha-placeholder');
+                if (placeholder) {
+                    placeholder.style.display = 'none'; // Hide it!
+                }
             } else {
                 showCustomMessage("Error: " + (data.error || "Failed to get XML URL."));
             }
@@ -227,3 +290,41 @@ if (isApiReady) {
 }
 
 
+
+// Zoom / Scaling Logic (Global UI + Sheet)
+
+
+if (zoomSlider) {
+    zoomSlider.addEventListener('input', (e) => {
+        const scaleLevel = parseFloat(e.target.value);
+        const percent = Math.round(scaleLevel * 100);
+        
+        // 1. Update Text Display
+        if (zoomDisplay) {
+            zoomDisplay.innerText = percent + "%";
+        }
+
+        // 2. Scale the Entire UI (Tailwind uses 'rem', so changing root font-size scales everything)
+        // Default browser font-size is 16px. 
+        // 100% = 16px, 150% = 24px, etc.
+        const basePixelSize = 16;
+        document.documentElement.style.fontSize = `${basePixelSize * scaleLevel}px`;
+
+        // 3. Scale AlphaTab (The sheet music engine)
+        if (isApiReady && api) {
+            api.settings.display.scale = scaleLevel;
+            api.updateSettings();
+            api.render();
+        }
+    });
+}
+
+// Handle Window Resizing (Responsive Layout)
+window.addEventListener('resize', () => {
+    if (isApiReady && api) {
+        // Allow the UI to settle before asking AlphaTab to redraw
+        setTimeout(() => {
+            api.render();
+        }, 100);
+    }
+});
