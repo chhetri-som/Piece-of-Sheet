@@ -6,8 +6,11 @@ from flask import Flask, request, jsonify, send_from_directory, url_for
 from music21 import converter
 from basic_pitch.inference import predict
 from basic_pitch import ICASSP_2022_MODEL_PATH
+import matplotlib
+matplotlib.use("Agg")  # Use non-GUI backend to avoid threading issues
 import matplotlib.pyplot as plt
 import traceback
+from threading import Lock
 
 # ============================================
 #  🎹 Piano Roll Visualization (Custom)
@@ -75,12 +78,25 @@ except Exception as e:
 # ============================================
 #  🎼 MIDI → MUSICXML CONVERSION
 # ============================================
+from music21 import midi
+
 def convert_midi_to_xml(midi_path, xml_filename):
+    """
+    Convert a MIDI file to MusicXML using music21 with better timing accuracy.
+    """
     try:
         if not xml_filename.endswith('.xml'):
             xml_filename += '.xml'
 
-        score = converter.parse(midi_path)
+        # Load MIDI file
+        mf = midi.MidiFile()
+        mf.open(midi_path)
+        mf.read()
+        mf.close()
+
+        # Convert MIDI to music21 stream
+        score = midi.translate.midiFileToStream(mf)
+
         output_path = os.path.join(OUTPUT_DIR, xml_filename)
         score.write('musicxml', fp=output_path)
 
@@ -106,13 +122,14 @@ def predict_wav_to_mid(wav_path, output_mid_path, output_vis_path):
 
     print(f"🎶 Running Basic Pitch prediction on: {wav_path}")
     try:
-        model_output, midi_data, note_events = predict(wav_path, model)
+        with predict_lock:
+            model_output, midi_data, note_events = predict(wav_path, model)
 
         # Save MIDI file
         midi_data.write(output_mid_path)
         print(f"✅ MIDI saved: {output_mid_path}")
 
-        # Extract piano roll matrix
+        # Extract piano roll
         piano_roll = model_output.get('note')
         if piano_roll is None:
             print("⚠️ No piano roll data found.")
@@ -177,9 +194,9 @@ def process_audio_file():
         xml_url, xml_path = convert_midi_to_xml(midi_path, xml_filename)
 
         # Cleanup
-        for temp_path in [wav_path, midi_path]:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
+        for temp_path in [wav_path, midi_path, vis_path]:
+            if os.path.exists(wav_path):
+                os.remove(wav_path)
 
         # Response
         if xml_url:
@@ -189,10 +206,9 @@ def process_audio_file():
             return jsonify({
                 "xmlUrl": xml_url,
                 "visUrl": vis_full_url
+                 "midiUrl": url_for('static', filename=f"generated/{midi_filename}", _external=True)
             })
         else:
-            if os.path.exists(vis_path):
-                os.remove(vis_path)
             return jsonify({"error": "Failed to convert MIDI to MusicXML"}), 500
 
     except Exception as e:
@@ -224,4 +240,5 @@ def health_check():
 #  🚀 RUN SERVER
 # ============================================
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, threaded=True)
+    app.run(debug=True, port=5000, threaded=False)
+ # Set threaded=False for thread safety, optional if using predict_lock
