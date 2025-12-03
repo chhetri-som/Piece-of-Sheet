@@ -40,4 +40,21 @@ __________.__                              _____
 - clone repository or download the entire repository.
 
 - use 'requirements.txt' in .venv/ to download all the necessary libraries in a virtual environment
+
+<h2>Project Demo</h2>
+
+<div align="center">
+  <img src="./assets/1.png" alt="flowchart">
+  <br>
+  </div>
+  
+<div align="center">
+  <img src="./assets/2.png" alt="flowchart">
+  <br>
+  </div>
+  
+<div align="center">
+  <img src="./assets/3.png" alt="flowchart">
+  <br>
+  </div>
  
