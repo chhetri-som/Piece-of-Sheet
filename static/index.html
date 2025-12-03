@@ -18,8 +18,8 @@
         },
         colors: {
           'tech-black': '#09090b',
-          'tech-card': '#18181b',
-          'tech-border': '#27272a',
+          'tech-card': 'rgba(255, 255, 255, 0.25)',
+          'tech-border': 'rgba(255, 255, 255, 0.4)',
           'accent': '#ffffff',
         }
       }
@@ -75,19 +75,20 @@
           </button>
         </div>
 
-        <div id="transpose-container" style="display:none;" class="bg-tech-card border border-tech-border p- sticky top-6">
-           <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-4">Transpose</label>
-           
-           <div class="flex items-center justify-between bg-black border border-zinc-800 p-2">
-              <button id="trans-down" class="w-12 h-12 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xl border border-zinc-700 transition-colors">-</button>
-              
-              <div class="flex flex-col items-center">
-                 <span id="trans-display" class="font-display text-2xl text-white">0</span>
-                 <span class="text-[10px] font-mono text-gray-500 uppercase">Semitones</span>
-              </div>
-              
-              <button id="trans-up" class="w-12 h-12 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xl border border-zinc-700 transition-colors">+</button>
-           </div>
+        <div id="transpose-container" style="display:none;" class="bg-tech-card border border-tech-border p-5 sticky top-6">
+          <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-4">Transpose</label>
+          
+          <div class="flex items-center justify-between bg-white/40 border border-black/10 p-2 rounded-lg">
+            
+            <button id="trans-down" class="w-12 h-12 bg-white/60 hover:bg-white text-black font-bold text-xl border border-black/10 transition-all rounded">-</button>
+            
+            <div class="flex flex-col items-center">
+                <span id="trans-display" class="font-display text-2xl text-black">0</span>
+                <span class="text-[10px] font-mono text-gray-600 uppercase">Semitones</span>
+            </div>
+            
+            <button id="trans-up" class="w-12 h-12 bg-white/60 hover:bg-white text-black font-bold text-xl border border-black/10 transition-all rounded">+</button>
+          </div>
         </div>
 
         <div class="bg-tech-card border border-tech-border p-5">
@@ -142,3 +143,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
