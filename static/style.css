@@ -12,14 +12,46 @@
     font-style: normal;
 }
 
-
 body {
+  /* Fallback color */
+  background: #EEAECA;
   
+  /* Your Gradient */
+  background: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+  
+  /* Ensures the gradient covers the whole screen height */
+  min-height: 100vh;
   
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+.bg-tech-card {
+  /* This creates the blur effect behind the element */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* Safari support */
+  
+  /* Force dark text for readability on glass */
+  color: #000000 !important;
+  
+  /* reliable box shadow to lift it off the background */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Ensure labels inside the glass are readable */
+.bg-tech-card label {
+  color: #3f3f46 !important; /* Zinc-700 */
+  font-weight: 700;
+}
+
+/* Make the file upload border visible on glass */
+.bg-tech-card .border-dashed {
+  border-color: rgba(0,0,0, 0.3) !important;
+}
+.bg-tech-card .border-dashed:hover {
+  border-color: #000 !important;
+  background-color: rgba(255,255,255, 0.2);
+}
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -84,3 +116,4 @@ button:contains("Play MIDI") {
 .lg\:col-span-3 button[style*="margin-top: 12px"]:hover {
   background-color: #3f3f46 !important;
 }
+
