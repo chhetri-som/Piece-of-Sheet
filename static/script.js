@@ -132,7 +132,7 @@ fileInput.addEventListener("change", () => {
             playAudioButton.innerText = wavesurfer.isPlaying() ? "⏸ Pause Audio" : "▶ Play Audio";
         };
         // Update button text on finish
-        wavesurfer.on('finish', () => { playAudioButton.innerText = "▶ Play Audio"; });
+        wavesurfer.on('finish', () => { playAudioButton.innerText = "↺ Replay Audio"; });
 
         waveformHeading.style.display = 'block';
         uploadButton.disabled = false;
@@ -346,3 +346,4 @@ window.addEventListener('resize', () => {
         setTimeout(() => api.render(), 100);
     }
 });
+
