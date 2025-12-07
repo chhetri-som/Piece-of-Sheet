@@ -20,11 +20,6 @@ const btnTransDown = document.getElementById('trans-down');
 const btnTransUp = document.getElementById('trans-up');
 const transDisplay = document.getElementById('trans-display');
 
-// Missing in HTML, so commented out to prevent errors:
-// const fileNameDisplay = document.getElementById("file-name-display"); 
-// const zoomSlider = document.getElementById("zoom-slider"); 
-// const zoomDisplay = document.getElementById("zoom-display");
-
 let transpositionValue = 0;
 let api;
 let isApiReady = false;
@@ -346,4 +341,5 @@ window.addEventListener('resize', () => {
         setTimeout(() => api.render(), 100);
     }
 });
+
 
