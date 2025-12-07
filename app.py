@@ -10,15 +10,6 @@ import traceback
 import gc
 
 # ============================================
-#   MATPLOTLIB SETUP (THREAD-SAFE)
-# ============================================
-import matplotlib
-matplotlib.use('Agg')  # Force non-interactive backend (Prevents server crashes)
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-
-# ============================================
 #   FLASK APP SETUP
 # ============================================
 app = Flask(__name__, static_url_path='', static_folder='static')
@@ -106,44 +97,9 @@ def convert_midi_to_xml(midi_path, xml_filename):
         return None, None
 
 # ============================================
-#   PIANO ROLL VISUALIZATION (THREAD-SAFE)
-# ============================================
-def save_piano_roll_plot(piano_roll, output_path, note_events, overlay_onsets=True):
-    """Create a piano roll visualization using the Object-Oriented API."""
-    try:
-        fig = Figure(figsize=(12, 6))
-        canvas = FigureCanvas(fig)
-        ax = fig.add_subplot(111)
-
-        ax.imshow(
-            np.flipud(piano_roll.T),
-            aspect="auto",
-            interpolation="nearest",
-            cmap="magma"
-        )
-        ax.set_xlabel("Time (frames)")
-        ax.set_ylabel("MIDI Note")
-        ax.set_title("Piano Roll Visualization")
-
-        if overlay_onsets and note_events is not None:
-            for onset, _, pitch, _, _ in note_events:
-                ax.axvline(onset, color="cyan", linestyle="--", linewidth=0.6)
-
-        fig.tight_layout()
-        canvas.print_png(output_path)
-        
-        # Explicit cleanup to free memory
-        plt.close(fig) # Should be unnecessary with Figure(), but safe for backend
-        del fig
-        gc.collect()
-        
-    except Exception as e:
-        print(f"❌ Error generating plot: {e}")
-
-# ============================================
 #   WAV → MIDI PREDICTION
 # ============================================
-def predict_wav_to_mid(wav_path, output_mid_path, output_vis_path):
+def predict_wav_to_mid(wav_path, output_mid_path):
     if model is None:
         return False
 
@@ -152,7 +108,7 @@ def predict_wav_to_mid(wav_path, output_mid_path, output_vis_path):
         # Tweak parameters here to reduce initial noise if needed
         # onset_threshold: Higher = fewer false positives
         # frame_threshold: Higher = sustains notes longer
-        model_output, midi_data, note_events = predict(
+        _, midi_data, _ = predict(
             wav_path, 
             model, 
             onset_threshold=0.6, 
@@ -161,15 +117,6 @@ def predict_wav_to_mid(wav_path, output_mid_path, output_vis_path):
 
         midi_data.write(output_mid_path)
         print(f"✅ MIDI saved: {output_mid_path}")
-
-        piano_roll = model_output.get('note')
-        if piano_roll is not None:
-            if tf.is_tensor(piano_roll):
-                piano_roll = piano_roll.numpy()
-            if len(piano_roll.shape) == 3:
-                piano_roll = np.squeeze(piano_roll, axis=0)
-            
-            save_piano_roll_plot(piano_roll, output_vis_path, note_events)
 
         return True
 
@@ -196,15 +143,15 @@ def process_audio_file():
     # Paths
     unique_id = str(int(time.time()))
     wav_path = os.path.join(UPLOAD_DIR, f"{unique_id}.wav")
-    midi_path = os.path.join(UPLOAD_DIR, f"{unique_id}.mid")
-    vis_path = os.path.join(OUTPUT_DIR, f"{unique_id}_vis.png")
+    midi_filename = f"{unique_id}.mid"
+    midi_path = os.path.join(OUTPUT_DIR, midi_filename)
     xml_filename = f"{unique_id}.xml"
 
     try:
         file.save(wav_path)
         
         # 1. Predict (Wav -> MIDI)
-        success = predict_wav_to_mid(wav_path, midi_path, vis_path)
+        success = predict_wav_to_mid(wav_path, midi_path)
         if not success:
             return jsonify({"error": "Prediction failed"}), 500
 
@@ -212,9 +159,13 @@ def process_audio_file():
         xml_url, xml_path = convert_midi_to_xml(midi_path, xml_filename)
         
         if xml_url:
-            vis_rel = f"generated/{os.path.basename(vis_path)}"
-            vis_full_url = url_for('static', filename=vis_rel, _external=True)
-            return jsonify({ "xmlUrl": xml_url, "visUrl": vis_full_url })
+            midi_rel = f"generated/{midi_filename}"
+            midi_full_url = url_for('static', filename=midi_rel, _external=True)
+
+            return jsonify({ 
+                "xmlUrl": xml_url, 
+                "midiUrl": midi_full_url 
+            })
         else:
             return jsonify({"error": "XML conversion failed"}), 500
 
@@ -222,14 +173,7 @@ def process_audio_file():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-    finally:
-        # 3. Cleanup Temps (WAV and MIDI)
-        # We delete these because we only need the XML and PNG for the frontend
-        try:
-            if os.path.exists(wav_path): os.remove(wav_path)
-            if os.path.exists(midi_path): os.remove(midi_path)
-        except Exception as e:
-            print(f"Cleanup error: {e}")
+
 
 @app.route('/')
 def index():
