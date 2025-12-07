@@ -43,16 +43,19 @@ __________.__                              _____
 
 <h2>Project Demo</h2>
 
+<h3>webpage</h3>
 <div align="center">
   <img src="./assets/1.png" alt="flowchart">
   <br>
   </div>
-  
-<div align="center">
-  <img src="./assets/2.png" alt="flowchart">
-  <br>
-  </div>
-  
+ 
+<h3>audio upload and playback</h3>
+
+
+<h3>midi generation and visualization</h3>
+
+
+<h3>sheet notation</h3>
 <div align="center">
   <img src="./assets/3.png" alt="flowchart">
   <br>
