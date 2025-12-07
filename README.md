@@ -51,11 +51,11 @@ __________.__                              _____
  
 <h3>audio upload and playback</h3>
 
-https://github.com/user-attachments/assets/8aaeb4e9-4047-431c-b20c-c56b8a414403
+https://github.com/user-attachments/assets/3f22c709-8906-4676-8100-81544bb7e77b
 
 <h3>midi generation and visualization</h3>
 
-https://github.com/user-attachments/assets/c549c3b2-cba6-4bd0-a331-9480ee96b4b5
+https://github.com/user-attachments/assets/ba7274c7-6669-4490-9811-557ef27b924c
 
 <h3>sheet notation</h3>
 <div align="center">
