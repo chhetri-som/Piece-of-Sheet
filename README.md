@@ -50,9 +50,11 @@ __________.__                              _____
   </div>
  
 <h3>audio upload and playback</h3>
+https://github.com/user-attachments/assets/8aaeb4e9-4047-431c-b20c-c56b8a414403
 
 
 <h3>midi generation and visualization</h3>
+https://github.com/user-attachments/assets/c549c3b2-cba6-4bd0-a331-9480ee96b4b5
 
 
 <h3>sheet notation</h3>
