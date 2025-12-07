@@ -77,10 +77,6 @@ function showCustomMessage(message) {
 
 // Shared function to reset UI (Removes Redundancy)
 function resetUI() {
-    pianoRollImage.style.display = 'none';
-    pianoRollHeading.style.display = 'none';
-    pianoRollImage.src = '';
-    
     // Reset Transpose
     transpositionValue = 0;
     transDisplay.innerText = "0";
@@ -166,7 +162,6 @@ if (isApiReady) {
             if (!healthRes.ok) throw new Error("Health check failed");
             const healthData = await healthRes.json();
             
-            // FIX: Changed 'model_status' to 'status' to match app.py
             if (healthData.status !== "ready") {
                 throw new Error("Model is not ready.");
             }
@@ -189,13 +184,11 @@ if (isApiReady) {
                 throw new Error("No XML URL returned.");
             }
 
-            if (data.visUrl) {
-                pianoRollImage.src = data.visUrl;
-                pianoRollImage.style.display = 'block';
-                pianoRollHeading.style.display = 'block';
+            if (data.midiUrl) {
+                currentMidiUrl = data.midiUrl;
+                playMidiBtn.disabled = false;
+                console.log("MIDI ready at:", currentMidiUrl);
             }
-
-            // MIDI Player code block removed to prevent dead logic.
 
         } catch (error) {
             console.error("Upload failed:", error);
@@ -205,6 +198,146 @@ if (isApiReady) {
             uploadButton.disabled = false;
         }
     });
+}
+
+// ==========================================
+// 5. MIDI PLAYBACK LOGIC
+// ==========================================
+
+const playMidiBtn = document.getElementById("play-midi-button");
+let currentMidiUrl = null;
+let audioContext = null;
+
+// Initialize AudioContext on user interaction (browsers block auto-audio)
+function initAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+playMidiBtn.addEventListener("click", () => {
+    if (!currentMidiUrl) return;
+    
+    initAudioContext();
+    playMidiBtn.disabled = true;
+    playMidiBtn.innerText = "⏳ Loading SoundFont...";
+
+    // 1. Load the SoundFont Instrument (Acoustic Grand Piano)
+    Soundfont.instrument(audioContext, 'acoustic_grand_piano').then(function (piano) {
+        
+        playMidiBtn.innerText = "⏳ Parsing MIDI...";
+
+        // 2. Fetch the MIDI file from our Flask Server
+        Midi.fromUrl(currentMidiUrl).then(midi => {
+            playMidiBtn.innerText = "▶ Playing...";
+            const now = audioContext.currentTime;
+
+            // 1. Schedule Audio (The Sound)
+            midi.tracks.forEach(track => {
+                track.notes.forEach(note => {
+                    piano.play(note.midi, now + note.time, { 
+                        duration: note.duration, 
+                        gain: note.velocity 
+                    });
+                });
+            });
+
+            // 2. Start Visuals (The Lights) <--- NEW LINE
+            startVisualizer(midi, now, audioContext); 
+
+            // Reset after song ends
+            setTimeout(() => {
+                playMidiBtn.innerText = "🎹 Play Generated MIDI";
+                playMidiBtn.disabled = false;
+                // Clear visuals
+                document.querySelectorAll('.piano-key').forEach(k => k.classList.remove('active'));
+            }, midi.duration * 1000);
+
+        });
+    });
+});
+
+// ==========================================
+// 6. INSTRUMENT CLUSTER (PIANO VISUALIZER)
+// ==========================================
+
+const pianoContainer = document.getElementById('piano-visualizer');
+const NOTE_RANGE_START = 36; // MIDI note 21 is A0 (lowest on piano)
+const NOTE_RANGE_END = 84;  // MIDI note 108 is C8 (highest)
+
+// Helper: Is this MIDI note a black key?
+function isBlackKey(midiParams) {
+    const n = midiParams % 12;
+    return (n === 1 || n === 3 || n === 6 || n === 8 || n === 10);
+}
+
+// 1. GENERATE THE PIANO KEYS
+function createPiano() {
+    pianoContainer.innerHTML = ''; // Clear existing
+    
+    for (let i = NOTE_RANGE_START; i <= NOTE_RANGE_END; i++) {
+        const key = document.createElement('div');
+        key.dataset.note = i; // Store MIDI number in data attribute
+        key.classList.add('piano-key');
+        
+        if (isBlackKey(i)) {
+            key.classList.add('black');
+        } else {
+            key.classList.add('white');
+        }
+        pianoContainer.appendChild(key);
+    }
+}
+
+// Call immediately to draw the piano on load
+createPiano();
+
+
+// 2. VISUALIZATION LOOP
+let animationFrameId;
+
+function startVisualizer(midiData, startTime, audioContext) {
+    // Cancel any existing loop
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+    const keys = document.querySelectorAll('.piano-key');
+
+    function draw() {
+        const currentTime = audioContext.currentTime - startTime;
+
+        // Stop if song is over
+        if (currentTime > midiData.duration) {
+            keys.forEach(k => k.classList.remove('active'));
+            return;
+        }
+
+        // Check every note in the MIDI data
+        // (Optimization: In a huge app, you'd use a cursor index, but this is fine for short songs)
+        const activeNotes = new Set();
+        
+        midiData.tracks.forEach(track => {
+            track.notes.forEach(note => {
+                // If current time is INSIDE the note's start and end window
+                if (currentTime >= note.time && currentTime < (note.time + note.duration)) {
+                    activeNotes.add(note.midi);
+                }
+            });
+        });
+
+        // Update DOM classes
+        keys.forEach(key => {
+            const noteNum = parseInt(key.dataset.note);
+            if (activeNotes.has(noteNum)) {
+                key.classList.add('active');
+            } else {
+                key.classList.remove('active');
+            }
+        });
+
+        animationFrameId = requestAnimationFrame(draw);
+    }
+
+    draw();
 }
 
 // --- Window Resize ---
