@@ -39,7 +39,7 @@ __________.__                              _____
   
 - clone repository or download the entire repository.
 
-- use 'requirements.txt' in .venv/ to download all the necessary libraries in a virtual environment
+- use 'requirements.txt' to download all the necessary libraries in a virtual environment
 
 <h2>Project Demo</h2>
 
