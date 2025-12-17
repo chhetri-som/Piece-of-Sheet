@@ -1,6 +1,6 @@
 import os
 import time
-import copy  # Required for duplicating the staff
+import copy
 import numpy as np
 import tensorflow as tf
 from flask import Flask, request, jsonify, send_from_directory, url_for
@@ -279,3 +279,4 @@ def health_check():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, threaded=True)
+
