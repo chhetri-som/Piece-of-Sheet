@@ -1,5 +1,7 @@
+/* FONTS & GLOBAL VARS */
 @font-face {
     font-family: 'THEBOLDFONT-FREEVERSION';
+    /* Ensure this file exists at static/font/THEBOLDFONT-FREEVERSION.woff */
     src: url('./font/THEBOLDFONT-FREEVERSION.woff') format('woff'); 
     font-weight: bold;
     font-style: normal;
@@ -12,97 +14,88 @@
     font-style: normal;
 }
 
-
+/* BODY & BACKGROUND */
 body {
-  /* Fallback color */
-  background: #EEAECA;
-  
-  /* Your Gradient */
-  background: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
-  
-  /* Ensures the gradient covers the whole screen height */
-  min-height: 100vh;
-  
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    background: #EEAECA;
+    background: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+    min-height: 100vh; 
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+h1.text-white {
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+}
+
+/* GLASSMORPHISM CARDS */
 .bg-tech-card {
-  /* This creates the blur effect behind the element */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px); /* Safari support */
-  
-  /* Force dark text for readability on glass */
-  color: #000000 !important;
-  
-  /* reliable box shadow to lift it off the background */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Safari support */
+    color: #000000 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Ensure labels inside the glass are readable */
 .bg-tech-card label {
-  color: #3f3f46 !important; /* Zinc-700 */
-  font-weight: 700;
+    color: #3f3f46 !important; /* Zinc-700 */
+    font-weight: 700;
 }
 
 /* Make the file upload border visible on glass */
 .bg-tech-card .border-dashed {
-  border-color: rgba(0,0,0, 0.3) !important;
+    border-color: rgba(0,0,0, 0.3) !important;
 }
 .bg-tech-card .border-dashed:hover {
-  border-color: #000 !important;
-  background-color: rgba(255,255,255, 0.2);
+    border-color: #000 !important;
+    background-color: rgba(255,255,255, 0.2);
 }
 
+/* SCROLLBARS */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+    width: 8px;
+    height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #18181b; 
+    background: rgba(0,0,0,0.1); 
 }
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46; 
-  border-radius: 5px;
-  border: 2px solid #18181b;
+    background: #3f3f46; 
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.3);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b; 
+    background: #52525b; 
 }
 
-/* AlphaTab Specific Overrides */
-
-#alphaTab-container {
-  display: block;
-  background-color: #ffffff !important;
-  color: #000000 !important;
+/* SHEET MUSIC CONTAINER (VEROVIO)*/
+#verovio-container {
+    display: block;
+    background-color: #ffffff !important; /* Sheet music needs white paper */
+    color: #000000 !important;
+    border-radius: 8px; /* Optional rounding */
+    padding: 10px;
 }
 
-.at-cursor-bar {
-  background: rgba(255, 242, 0, 0.25) !important; 
+/* Helper to hide placeholder when loaded */
+.verovio-loaded #alpha-placeholder {
+    display: none;
 }
 
-.at-selection-group {
-  background: rgba(64, 64, 255, 0.1) !important;
-}
-
-/* Hide alphaTab placeholder when content loads (helper class) */
-.alphaTab-loaded #alpha-placeholder {
-  display: none;
-}
-
-/* Piano Container */
+/* PIANO VISUALIZER */
 #piano-visualizer {
     position: relative;
     background: transparent;
-    overflow-x: auto; /* Allow scrolling if too wide */
+    overflow-x: auto; 
     overflow-y: hidden;
+    display: flex;
+    justify-content: center;
 }
 
 /* General Key Style */
 .piano-key {
     position: relative;
-    float: left;
+    float: left; /* Fallback */
     border-radius: 0 0 4px 4px;
     transition: background-color 0.05s ease;
     cursor: pointer;
@@ -111,7 +104,7 @@ body {
 /* White Keys */
 .piano-key.white {
     height: 100%;
-    width: 3.5%; /* Adjust based on how many keys you want visible */
+    width: 3.5%; 
     background: #fff;
     border: 1px solid #ccc;
     z-index: 1;
@@ -120,41 +113,41 @@ body {
 /* Black Keys */
 .piano-key.black {
     height: 60%;
-    width: 1.5%; /* Narrower than white keys */
+    width: 1.5%; 
     background: #000;
-    margin-left: -0.75%; /* Pull back to overlap white keys */
+    margin-left: -0.75%; /* Pull back to overlap */
     margin-right: -0.75%;
     z-index: 2;
-    position: relative; /* Ensure z-index works */
 }
 
 /* Active State (When playing) */
 .piano-key.white.active {
-    background: #3b82f6; /* Blue */
+    background: #3b82f6 !important; /* Blue */
     box-shadow: 0 0 10px #3b82f6;
     transform: translateY(2px);
 }
 
 .piano-key.black.active {
-    background: #60a5fa; /* Lighter Blue */
+    background: #60a5fa !important; /* Lighter Blue */
     box-shadow: 0 0 10px #60a5fa;
 }
 
+/* BUTTON OVERRIDES */
 /* Target buttons generated by JS in the sidebar */
 .lg\:col-span-3 button[style*="margin-top: 12px"] {
-  width: 100%;
-  background-color: #27272a !important; /* Zinc 800 */
-  color: white !important;
-  border: 1px solid #3f3f46 !important;
-  padding: 12px !important;
-  font-family: 'Space Grotesk', sans-serif !important;
-  text-transform: uppercase !important;
-  font-size: 0.875rem !important; /* text-sm */
-  border-radius: 0 !important; /* Blocky */
-  margin-top: 10px !important;
-  transition: background 0.2s;
+    width: 100%;
+    background-color: #27272a !important; 
+    color: white !important;
+    border: 1px solid #3f3f46 !important;
+    padding: 12px !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    text-transform: uppercase !important;
+    font-size: 0.875rem !important; 
+    border-radius: 0 !important; 
+    margin-top: 10px !important;
+    transition: background 0.2s;
 }
 
 .lg\:col-span-3 button[style*="margin-top: 12px"]:hover {
-  background-color: #3f3f46 !important;
+    background-color: #3f3f46 !important;
 }
