@@ -13,10 +13,6 @@ import gc
 #   FLASK APP SETUP
 app = Flask(__name__, static_url_path='', static_folder='static')
 
-# Optional: Enable CORS if your frontend is on a different port (requires: pip install flask-cors)
-# from flask_cors import CORS
-# CORS(app)
-
 UPLOAD_DIR = "uploads"
 OUTPUT_DIR = os.path.join('static', 'generated')
 
@@ -33,18 +29,13 @@ try:
             tf.config.experimental.set_memory_growth(gpu, True)
     
     print(f" * Loading Basic Pitch model into memory...")
-    
-    # FIX 1: Load the model object once into RAM
     model = ICASSP_2022_MODEL_PATH
-    
     print(" * Model initialized successfully.\n")
 
 except Exception as e:
     print(f"❌ ERROR: Could not load Basic Pitch model.\n{e}")
     traceback.print_exc()
 
-
-# GUITAR TAB LOGIC
 # Standard Tuning (E2 - E4)
 GUITAR_TUNING = {
     1: 64, # High E (E4)
@@ -55,8 +46,8 @@ GUITAR_TUNING = {
     6: 40  # Low E (E2)
 }
 
+# Force notes into playable electric guitar range (E2-E6).
 def clamp_to_guitar_range(midi_val):
-    """Force notes into playable electric guitar range (E2-E6)."""
     while midi_val < 40: # Below Low E
         midi_val += 12
     while midi_val > 88: # Above High E (24th fret)
@@ -73,7 +64,6 @@ def add_guitar_tab_data(score):
             # Simplify chords for tabs (just tab the root/bass note for now)
             # Full chord tabbing requires complex logic, this prevents crashes.
             pass 
-
     return score
 
 def process_single_note_for_tab(n):
@@ -84,8 +74,6 @@ def process_single_note_for_tab(n):
     
     for string_num, open_pitch in GUITAR_TUNING.items():
         fret = midi_pitch - open_pitch
-        
-        # Extended range (0-24) to catch solos
         if 0 <= fret <= 24:
             if fret == 0:
                 best_string = string_num
@@ -95,7 +83,6 @@ def process_single_note_for_tab(n):
                 best_fret = fret
                 best_string = string_num
     
-    # FIX 2: Safer Fallback
     # If no valid string found, force to Low E (String 6) to avoid negative frets
     if best_string == 0:
          best_string = 6 
@@ -144,15 +131,15 @@ def convert_midi_to_xml(midi_path, xml_filename):
         
         output_path = os.path.join(OUTPUT_DIR, xml_filename)
         
-        # 1. Parse & Clean
+        # Parse & Clean
         original_score = converter.parse(midi_path)
         cleaned_score = clean_and_quantize_score(original_score)
         cleaned_score = add_guitar_tab_data(cleaned_score)
 
-        # 2. SETUP DUAL-STAFF SCORE
+        # SETUP DUAL-STAFF SCORE
         dual_staff_score = stream.Score()
         
-        # --- PART 1: Standard Notation ---
+        # --- Standard Notation ---
         part_standard = copy.deepcopy(cleaned_score.parts[0])
         part_standard.id = 'Standard'
         part_standard.partName = 'Sheet' 
@@ -162,7 +149,7 @@ def convert_midi_to_xml(midi_path, xml_filename):
             inst.partAbbreviation = ""
             inst.bestName = ""
         
-        # --- PART 2: Tablature ---
+        # --- Tablature ---
         part_tab = copy.deepcopy(cleaned_score.parts[0])
         part_tab.id = 'Tab'
         part_tab.partName = 'Tab'
@@ -181,23 +168,23 @@ def convert_midi_to_xml(midi_path, xml_filename):
             if m.number == 1:
                 m.insert(0, clef.TabClef())
 
-        # 3. ASSEMBLE
+        # ASSEMBLE
         dual_staff_score.insert(0, part_standard)
         dual_staff_score.insert(0, part_tab)
 
         grp = layout.StaffGroup([part_standard, part_tab], symbol='bracket', text='')
         dual_staff_score.insert(0, grp)
 
-        # 4. METADATA CLEANUP (This stops the weird number)
+        # METADATA CLEANUP
         dual_staff_score.metadata = metadata.Metadata()
         dual_staff_score.metadata.title = "Guitar Transcription"
         dual_staff_score.metadata.composer = ""
         
-        # CRITICAL: This wipes the specific text field causing the integer overflow
+        # This wipes the specific text field causing the integer overflow (did not work)
         if hasattr(dual_staff_score, 'credits'):
             dual_staff_score.credits.clear()
 
-        # 5. WRITE
+        # WRITE
         dual_staff_score.write('musicxml', fp=output_path)
 
         xml_rel = f"generated/{xml_filename}"
@@ -259,7 +246,7 @@ def process_audio_file():
     
         success = predict_wav_to_mid(wav_path, midi_path)
         
-        # FIX 3: Immediate cleanup of input file
+        # Immediate cleanup of input file
         if os.path.exists(wav_path):
             os.remove(wav_path)
 
