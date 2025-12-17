@@ -6,33 +6,29 @@
   <title>Piece of SHEET</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: {
-          sans: ['Delight', 'sans-serif'], 
-          display: ['THEBOLDFONT-FREEVERSION', 'sans-serif'], 
-        },
-        colors: {
-          'tech-black': '#09090b',
-          'tech-card': 'rgba(255, 255, 255, 0.25)',
-          'tech-border': 'rgba(255, 255, 255, 0.4)',
-          'accent': '#ffffff',
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Delight', 'sans-serif'], 
+            display: ['THEBOLDFONT-FREEVERSION', 'sans-serif'], 
+          },
+          colors: {
+            'tech-black': '#09090b',
+            'tech-card': 'rgba(255, 255, 255, 0.25)',
+            'tech-border': 'rgba(255, 255, 255, 0.4)',
+            'accent': '#ffffff',
+          }
         }
       }
     }
-  }
-</script>
+  </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.js"></script>
+  <script src="https://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
   <script src="https://unpkg.com/wavesurfer.js"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-
   <script src="https://unpkg.com/@tonejs/midi"></script>
-
   <script src="https://unpkg.com/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
@@ -55,7 +51,6 @@
         </div>
       </div>
     </header> 
-
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
       
@@ -82,7 +77,6 @@
           <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-4">Transpose</label>
           
           <div class="flex items-center justify-between bg-white/40 border border-black/10 p-2 rounded-lg">
-            
             <button id="trans-down" class="w-12 h-12 bg-white/60 hover:bg-white text-black font-bold text-xl border border-black/10 transition-all rounded">-</button>
             
             <div class="flex flex-col items-center">
@@ -121,7 +115,6 @@
         </div>
 
         <div class="relative bg-tech-card backdrop-blur-md border border-tech-border rounded-xl overflow-hidden min-h-[160px] flex items-end justify-center p-4">
-            
            <h2 id="piano-roll-heading" class="absolute top-2 left-3 z-10 text-[10px] font-mono font-bold bg-white text-black px-2 py-1">
              LIVE VISUALIZER
            </h2>
@@ -137,16 +130,15 @@
             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sheet Music View</span>
           </div>
           
-          <div id="alphaTab-container" class="w-full h-full p-4 overflow-auto bg-white text-black">
-             <div id="alpha-placeholder" class="h-[400px] flex flex-col items-center justify-center text-gray-300 font-display text-4xl uppercase">
-                Waiting for Data...
-             </div>
+          <div id="verovio-container" style="width: 100%; height: 800px; overflow-y: scroll; border: none; background-color: white; color: black;"></div>
+
+          <div id="alpha-placeholder" class="h-[400px] flex flex-col items-center justify-center text-gray-300 font-display text-4xl uppercase">
+             Waiting for Data...
           </div>
         </div>
 
       </div>
     </div>
-
   </div>
 
   <script src="script.js"></script>
