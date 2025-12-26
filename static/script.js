@@ -16,7 +16,14 @@ const btnTransDown = document.getElementById('trans-down');
 const btnTransUp = document.getElementById('trans-up');
 const transDisplay = document.getElementById('trans-display');
 
+// Tempo elements
+const tempoContainer = document.getElementById('tempo-container');
+const btnTempoDown = document.getElementById('tempo-down');
+const btnTempoUp = document.getElementById('tempo-up');
+const tempoDisplay = document.getElementById('tempo-display');
+
 let transpositionValue = 0;
+let playbackRate = 1.0;
 let wavesurfer;
 let currentXmlData = null;
 
@@ -111,6 +118,8 @@ function resetUI() {
     // Reset Transpose
     transpositionValue = 0;
     transDisplay.innerText = "0";
+    playbackRate = 1.0;
+    if (tempoDisplay) tempoDisplay.innerText = "1.0x";
     currentXmlData = null;
 
     // Clear Verovio
@@ -154,6 +163,26 @@ btnTransUp.addEventListener('click', () => {
     updateTransposition();
 });
 
+// --- Tempo Logic ---
+function updateTempoDisplay() {
+    tempoDisplay.innerText = `${playbackRate.toFixed(1)}x`;
+    stopMidiPlayback();
+}
+
+btnTempoDown.addEventListener('click', () => {
+    if (playbackRate > 0.2) {
+        playbackRate = Math.max(0.1, playbackRate - 0.1);
+        updateTempoDisplay();
+    }
+});
+
+btnTempoUp.addEventListener('click', () => {
+    if (playbackRate < 4.0) {
+        playbackRate = Math.min(4.0, playbackRate + 0.1);
+        updateTempoDisplay();
+    }
+});
+
 // --- File Selection ---
 fileInput.addEventListener("change", () => {
     const file = fileInput.files[0];
@@ -173,6 +202,7 @@ fileInput.addEventListener("change", () => {
         waveformHeading.style.display = 'block';
         uploadButton.disabled = false;
         transposeContainer.style.display = 'block';
+        if (tempoContainer) tempoContainer.style.display = 'block';
     } else {
         uploadButton.disabled = true;
     }
@@ -307,8 +337,8 @@ playMidiBtn.addEventListener("click", () => {
                 track.notes.forEach(note => {
                     // Apply transposition to audio
                     const pitch = note.midi + transpositionValue;
-                    piano.play(pitch, now + note.time, {
-                        duration: note.duration,
+                    piano.play(pitch, now + (note.time / playbackRate), {
+                        duration: note.duration / playbackRate,
                         gain: note.velocity
                     });
                 });
@@ -356,7 +386,9 @@ function startVisualizer(midiData, startTime, audioContext) {
 
         // FINISH DETECTION
         // Add a small buffer (e.g., 0.5s) to ensure last note plays out
-        if (currentTime > midiData.duration + 0.5) {
+        // FINISH DETECTION
+        // Add a small buffer (e.g., 0.5s) to ensure last note plays out
+        if (currentTime > (midiData.duration / playbackRate) + 0.5) {
             keys.forEach(k => k.classList.remove('active'));
             midiPlayerState = 'stopped';
             playMidiBtn.innerText = "🎹 Play Generated MIDI";
@@ -368,7 +400,7 @@ function startVisualizer(midiData, startTime, audioContext) {
         const activeNotes = new Set();
         midiData.tracks.forEach(track => {
             track.notes.forEach(note => {
-                if (currentTime >= note.time && currentTime < (note.time + note.duration)) {
+                if (currentTime >= (note.time / playbackRate) && currentTime < ((note.time + note.duration) / playbackRate)) {
                     // Apply transposition to visuals too
                     activeNotes.add(note.midi + transpositionValue);
                 }
