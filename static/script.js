@@ -7,8 +7,10 @@ const playAudioButton = document.getElementById("play-audio-button");
 const placeholder = document.getElementById('alpha-placeholder');
 
 // Download Elements
+// Download Elements
 const btnDownloadSheet = document.getElementById('download-sheet-btn');
 const btnDownloadMidi = document.getElementById('download-midi-btn');
+const btnDownloadPng = document.getElementById('download-png-btn');
 
 // Visualization elements
 const waveformContainer = document.getElementById("waveform-container");
@@ -39,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Disable download buttons initially
     if (btnDownloadSheet) btnDownloadSheet.classList.add('pointer-events-none', 'opacity-50');
     if (btnDownloadMidi) btnDownloadMidi.classList.add('pointer-events-none', 'opacity-50');
+    if (btnDownloadMidi) btnDownloadMidi.classList.add('pointer-events-none', 'opacity-50');
+    if (btnDownloadPng) btnDownloadPng.classList.add('pointer-events-none', 'opacity-50');
 
     // Check if Verovio script loaded
     if (typeof verovio === 'undefined') {
@@ -81,7 +85,65 @@ function updateDownloadButtons(xmlUrl, midiUrl) {
         btnDownloadMidi.href = midiUrl;
         btnDownloadMidi.classList.remove('pointer-events-none', 'opacity-50');
     }
+    if (btnDownloadPng) {
+        btnDownloadPng.classList.remove('pointer-events-none', 'opacity-50');
+    }
 }
+
+// PNG DOWNLOAD LOGIC
+if (btnDownloadPng) {
+    btnDownloadPng.addEventListener('click', () => {
+        if (!verovioContainer) return;
+
+        // Find the SVG in the container
+        const svg = verovioContainer.querySelector('svg');
+        if (!svg) {
+            alert("No music rendered to export.");
+            return;
+        }
+
+        // 1. Serialize SVG
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(svg);
+
+        // 2. Create an Image from SVG
+        const img = new Image();
+        // Use base64 to ensure it loads
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        img.onload = function () {
+            // 3. Draw to Canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = svg.getBoundingClientRect().width * 2; // 2x scale for better quality
+            canvas.height = svg.getBoundingClientRect().height * 2;
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(2, 2);
+            // White background (transparent by default)
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.drawImage(img, 0, 0);
+
+            // 4. Download
+            // We use standard link trick
+            const pngUrl = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.href = pngUrl;
+            downloadLink.download = 'sheet-music-view.png';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            URL.revokeObjectURL(url);
+        };
+
+        img.src = url;
+    });
+}
+
+
 
 function renderWithVerovio(xmlUrl) {
     if (!verovioToolkit) {
@@ -156,6 +218,9 @@ function resetUI() {
     if (btnDownloadMidi) {
         btnDownloadMidi.classList.add('pointer-events-none', 'opacity-50');
         btnDownloadMidi.href = "#";
+    }
+    if (btnDownloadPng) {
+        btnDownloadPng.classList.add('pointer-events-none', 'opacity-50');
     }
 }
 

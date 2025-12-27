@@ -128,15 +128,21 @@
         <div class="bg-tech-card border border-tech-border p-5">
           <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-3">Downloads</label>
 
-          <div class="flex gap-2">
-            <a id="download-sheet-btn" href="#" download
-              class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-center py-3 text-xs font-bold uppercase disabled:opacity-50 disabled:pointer-events-none transition-all border border-zinc-600">
-              📄 Sheet (XML)
-            </a>
-            <a id="download-midi-btn" href="#" download
-              class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-center py-3 text-xs font-bold uppercase disabled:opacity-50 disabled:pointer-events-none transition-all border border-zinc-600">
-              🎹 MIDI
-            </a>
+          <div class="flex flex-col gap-2">
+            <div class="flex gap-2">
+              <a id="download-sheet-btn" href="#" download
+                class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-center py-3 text-xs font-bold uppercase disabled:opacity-50 disabled:pointer-events-none transition-all border border-zinc-600">
+                📄 Sheet (XML)
+              </a>
+              <a id="download-midi-btn" href="#" download
+                class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-center py-3 text-xs font-bold uppercase disabled:opacity-50 disabled:pointer-events-none transition-all border border-zinc-600">
+                🎹 MIDI
+              </a>
+            </div>
+            <button id="download-png-btn"
+              class="w-full bg-zinc-800 hover:bg-zinc-700 text-white text-center py-3 text-xs font-bold uppercase disabled:opacity-50 disabled:pointer-events-none transition-all border border-zinc-600 opacity-50 pointer-events-none">
+              🖼️ Download Image (PNG)
+            </button>
           </div>
         </div>
       </div>
