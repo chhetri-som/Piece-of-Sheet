@@ -124,7 +124,7 @@ def clean_and_quantize_score(score):
     return score
 
 #   MIDI → MUSICXML CONVERSION (DUAL STAFF FOR VEROVIO)
-def convert_midi_to_xml(midi_path, xml_filename):
+def convert_midi_to_xml(midi_path, xml_filename, transpose_semitones=0):
     try:
         if not xml_filename.endswith('.xml'):
             xml_filename += '.xml'
@@ -133,6 +133,11 @@ def convert_midi_to_xml(midi_path, xml_filename):
         
         # Parse & Clean
         original_score = converter.parse(midi_path)
+
+        # Apply Transposition
+        if transpose_semitones != 0:
+            original_score = original_score.transpose(transpose_semitones)
+
         cleaned_score = clean_and_quantize_score(original_score)
         cleaned_score = add_guitar_tab_data(cleaned_score)
 
@@ -259,6 +264,7 @@ def process_audio_file():
             midi_full_url = url_for('static', filename=midi_rel, _external=True)
 
             return jsonify({ 
+                "id": unique_id,
                 "xmlUrl": xml_url, 
                 "midiUrl": midi_full_url 
             })
@@ -268,6 +274,33 @@ def process_audio_file():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+@app.route('/transpose', methods=['POST'])
+def transpose_score():
+    data = request.json
+    unique_id = data.get('id')
+    semitones = int(data.get('semitones', 0))
+
+    if not unique_id:
+        return jsonify({"error": "Missing ID"}), 400
+
+    midi_filename = f"{unique_id}.mid"
+    midi_path = os.path.join(OUTPUT_DIR, midi_filename)
+    
+    if not os.path.exists(midi_path):
+         return jsonify({"error": "Original MIDI not found"}), 404
+
+    # We generate a separate XML file for the transposition to avoid overwriting or caching issues?
+    # Or just overwrite? Overwriting might be fine, but browser caching could be an issue.
+    # Let's append transposition to filename.
+    xml_filename = f"{unique_id}_trans{semitones}.xml"
+    
+    xml_url, _ = convert_midi_to_xml(midi_path, xml_filename, transpose_semitones=semitones)
+
+    if xml_url:
+        return jsonify({"xmlUrl": xml_url})
+    else:
+        return jsonify({"error": "Transposition failed"}), 500
 
 @app.route('/')
 def index():

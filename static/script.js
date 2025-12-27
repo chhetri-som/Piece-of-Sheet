@@ -26,6 +26,7 @@ let transpositionValue = 0;
 let playbackRate = 1.0;
 let wavesurfer;
 let currentXmlData = null;
+let currentFileId = null;
 
 // VEROVIO INITIALIZATION
 let verovioToolkit = null;
@@ -131,22 +132,68 @@ function resetUI() {
 
 // EVENT LISTENERS
 // --- Transposition Logic ---
-function updateTransposition() {
+async function updateTransposition() {
     // Update UI Text
     transDisplay.innerText = transpositionValue > 0 ? `+${transpositionValue}` : transpositionValue;
 
-    // Update Sheet Music Visuals
-    if (verovioToolkit && currentXmlData) {
-        try {
-            // Tell Verovio to shift the display
+    if (!currentFileId) {
+        // Fallback or just ignore if no file loaded
+        // If we want to support client-side only (legacy), we could keep the old logic here.
+        // But assumed usage is with uploaded file.
+        if (verovioToolkit && currentXmlData) {
             verovioToolkit.setOptions({ transpose: transpositionValue });
-            // Reload the SAME data to apply the new option
             verovioToolkit.loadData(currentXmlData);
-            // Re-render
             verovioContainer.innerHTML = verovioToolkit.renderToSVG(1);
-        } catch (e) {
-            console.error("Transposition render error:", e);
         }
+        return;
+    }
+
+    // Call Server for clean transposition (updates Tabs + Sheet)
+    try {
+        verovioContainer.style.opacity = '0.5';
+
+        const response = await fetch('/transpose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: currentFileId,
+                semitones: transpositionValue
+            })
+        });
+
+        if (!response.ok) throw new Error("Transposition failed");
+
+        const data = await response.json();
+
+        if (data.xmlUrl) {
+            // Load NEW XML
+            // Important: Set Verovio transpose to 0 because the XML is already transposed!
+            if (verovioToolkit) {
+                verovioToolkit.setOptions({ transpose: 0 });
+
+                // Fetch the new XML content
+                const xmlRes = await fetch(data.xmlUrl);
+                const newXmlData = await xmlRes.text();
+
+                // Don't update currentXmlData if you want to keep original? 
+                // Actually better to keep original as base? 
+                // No, for this flow, we just render the new one.
+                // But wait, if we transpose +1 then +1 (total +2), we send +2 to server.
+                // So we don't need to update 'currentXmlData' to the transposed one 
+                // if we consider 'currentXmlData' as the cached original.
+                // BUT renderWithVerovio updates 'currentXmlData'.
+
+                verovioToolkit.loadData(newXmlData);
+                verovioContainer.innerHTML = verovioToolkit.renderToSVG(1);
+            }
+        }
+
+    } catch (e) {
+        console.error("Transposition Server Error:", e);
+        // Fallback to client side if server fails?
+        // showCustomMessage("Transposition failed on server.");
+    } finally {
+        verovioContainer.style.opacity = '1';
     }
 
     // Stop any playing MIDI since pitch changed
@@ -187,6 +234,7 @@ btnTempoUp.addEventListener('click', () => {
 fileInput.addEventListener("change", () => {
     const file = fileInput.files[0];
     resetUI();
+    currentFileId = null; // Reset ID
 
     if (file && wavesurfer) {
         const fileUrl = URL.createObjectURL(file);
@@ -238,6 +286,10 @@ uploadButton.addEventListener("click", async () => {
         const data = await response.json();
 
         // Handle Results
+        if (data.id) {
+            currentFileId = data.id;
+        }
+
         if (data.xmlUrl) {
             // CALL VEROVIO RENDERER HERE
             renderWithVerovio(data.xmlUrl);
