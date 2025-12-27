@@ -6,6 +6,10 @@ const verovioContainer = document.getElementById("verovio-container");
 const playAudioButton = document.getElementById("play-audio-button");
 const placeholder = document.getElementById('alpha-placeholder');
 
+// Download Elements
+const btnDownloadSheet = document.getElementById('download-sheet-btn');
+const btnDownloadMidi = document.getElementById('download-midi-btn');
+
 // Visualization elements
 const waveformContainer = document.getElementById("waveform-container");
 const waveformHeading = document.getElementById("waveform-heading");
@@ -32,6 +36,10 @@ let currentFileId = null;
 let verovioToolkit = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Disable download buttons initially
+    if (btnDownloadSheet) btnDownloadSheet.classList.add('pointer-events-none', 'opacity-50');
+    if (btnDownloadMidi) btnDownloadMidi.classList.add('pointer-events-none', 'opacity-50');
+
     // Check if Verovio script loaded
     if (typeof verovio === 'undefined') {
         console.error("Verovio script not found. Make sure you added it to HTML.");
@@ -63,6 +71,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 });
+
+function updateDownloadButtons(xmlUrl, midiUrl) {
+    if (xmlUrl) {
+        btnDownloadSheet.href = xmlUrl;
+        btnDownloadSheet.classList.remove('pointer-events-none', 'opacity-50');
+    }
+    if (midiUrl) {
+        btnDownloadMidi.href = midiUrl;
+        btnDownloadMidi.classList.remove('pointer-events-none', 'opacity-50');
+    }
+}
 
 function renderWithVerovio(xmlUrl) {
     if (!verovioToolkit) {
@@ -128,6 +147,16 @@ function resetUI() {
 
     // Show placeholder again
     if (placeholder) placeholder.style.display = 'flex';
+
+    // Disable downloads
+    if (btnDownloadSheet) {
+        btnDownloadSheet.classList.add('pointer-events-none', 'opacity-50');
+        btnDownloadSheet.href = "#";
+    }
+    if (btnDownloadMidi) {
+        btnDownloadMidi.classList.add('pointer-events-none', 'opacity-50');
+        btnDownloadMidi.href = "#";
+    }
 }
 
 // EVENT LISTENERS
@@ -164,6 +193,13 @@ async function updateTransposition() {
         if (!response.ok) throw new Error("Transposition failed");
 
         const data = await response.json();
+
+        // Update Download Links
+        updateDownloadButtons(data.xmlUrl, data.midiUrl);
+
+        if (data.midiUrl) {
+            currentMidiUrl = data.midiUrl; // Update playback URL too
+        }
 
         if (data.xmlUrl) {
             // Load NEW XML
@@ -302,6 +338,9 @@ uploadButton.addEventListener("click", async () => {
             playMidiBtn.disabled = false;
             console.log("MIDI ready at:", currentMidiUrl);
         }
+
+        // Update Download Buttons
+        updateDownloadButtons(data.xmlUrl, data.midiUrl);
 
     } catch (error) {
         console.error("Upload failed:", error);
