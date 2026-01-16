@@ -123,17 +123,14 @@ def clean_and_quantize_score(score):
 
     return score
 
-#   MIDI → MUSICXML CONVERSION (DUAL STAFF FOR VEROVIO)
-def convert_midi_to_xml(midi_path, xml_filename):
+def convert_score_to_xml(score, xml_filename):
     try:
         if not xml_filename.endswith('.xml'):
             xml_filename += '.xml'
         
         output_path = os.path.join(OUTPUT_DIR, xml_filename)
         
-        # Parse & Clean
-        original_score = converter.parse(midi_path)
-        cleaned_score = clean_and_quantize_score(original_score)
+        cleaned_score = clean_and_quantize_score(score)
         cleaned_score = add_guitar_tab_data(cleaned_score)
 
         # SETUP DUAL-STAFF SCORE
@@ -192,7 +189,24 @@ def convert_midi_to_xml(midi_path, xml_filename):
         return xml_full_url, output_path
 
     except Exception as e:
-        print(f"❌ Error converting MIDI to XML: {e}")
+        print(f"❌ Error converting Score to XML: {e}")
+        traceback.print_exc()
+        return None, None
+
+#   MIDI → MUSICXML CONVERSION (DUAL STAFF FOR VEROVIO)
+def convert_midi_to_xml(midi_path, xml_filename, transpose_semitones=0):
+    try:
+        # Parse & Clean
+        original_score = converter.parse(midi_path)
+
+        # Apply Transposition
+        if transpose_semitones != 0:
+            original_score = original_score.transpose(transpose_semitones)
+
+        return convert_score_to_xml(original_score, xml_filename)
+
+    except Exception as e:
+        print(f"❌ Error parsing MIDI: {e}")
         traceback.print_exc()
         return None, None
     
@@ -259,6 +273,7 @@ def process_audio_file():
             midi_full_url = url_for('static', filename=midi_rel, _external=True)
 
             return jsonify({ 
+                "id": unique_id,
                 "xmlUrl": xml_url, 
                 "midiUrl": midi_full_url 
             })
@@ -266,6 +281,50 @@ def process_audio_file():
             return jsonify({"error": "XML conversion failed"}), 500
 
     except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/transpose', methods=['POST'])
+def transpose_score():
+    data = request.json
+    unique_id = data.get('id')
+    semitones = int(data.get('semitones', 0))
+
+    if not unique_id:
+        return jsonify({"error": "Missing ID"}), 400
+
+    midi_filename = f"{unique_id}.mid"
+    midi_path = os.path.join(OUTPUT_DIR, midi_filename)
+    
+    if not os.path.exists(midi_path):
+         return jsonify({"error": "Original MIDI not found"}), 404
+
+    try:
+        # Load Original
+        original_score = converter.parse(midi_path)
+        
+        # Transpose
+        transposed_score = original_score.transpose(semitones)
+        
+        # Save Transposed MIDI
+        transposed_midi_filename = f"{unique_id}_trans{semitones}.mid"
+        transposed_midi_path = os.path.join(OUTPUT_DIR, transposed_midi_filename)
+        transposed_score.write('midi', fp=transposed_midi_path)
+        
+        # Generate XML
+        xml_filename = f"{unique_id}_trans{semitones}.xml"
+        xml_url, _ = convert_score_to_xml(transposed_score, xml_filename)
+
+        midi_rel = f"generated/{transposed_midi_filename}"
+        midi_full_url = url_for('static', filename=midi_rel, _external=True)
+
+        if xml_url:
+            return jsonify({"xmlUrl": xml_url, "midiUrl": midi_full_url})
+        else:
+            return jsonify({"error": "Transposition failed"}), 500
+
+    except Exception as e:
+        print(f"Server Transpose Error: {e}")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
