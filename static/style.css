@@ -151,3 +151,215 @@ h1.text-white {
 .lg\:col-span-3 button[style*="margin-top: 12px"]:hover {
     background-color: #3f3f46 !important;
 }
+
+/* HERO / FRONT PAGE */
+
+#hero {
+    position: relative;
+    isolation: isolate;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 50% 30%, rgba(255,255,255,0.08), transparent 60%),
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.04), transparent 50%);
+    animation: slowDrift 20s linear infinite;
+}
+
+@keyframes slowDrift {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0); }
+}
+
+/* SCROLL INDICATOR */
+
+.scroll-indicator {
+    width: 24px;
+    height: 48px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 999px;
+    position: relative;
+}
+
+.scroll-indicator span {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    animation: scrollDot 2s infinite;
+}
+
+@keyframes scrollDot {
+    0% { opacity: 0; transform: translate(-50%, 0); }
+    40% { opacity: 1; }
+    80% { opacity: 0; transform: translate(-50%, 16px); }
+}
+
+/* GLOSSY BUTTON SHEEN (SAFE OVERLAY) */
+
+button {
+    position: relative;
+    overflow: hidden;
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent 20%,
+        rgba(255,255,255,0.15),
+        transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+button:hover::after {
+    opacity: 1;
+}
+
+/* APP REVEAL TRANSITION */
+
+#app-shell {
+    opacity: 0;
+    transform: translateY(96px);
+    transition: opacity 1s ease, transform 1s ease;
+}
+
+body.reveal-app #app-shell {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===============================
+   GUIDED FLOW
+   =============================== */
+
+#guided-flow {
+    opacity: 0.7;
+}
+
+.flow-step {
+    position: relative;
+    padding-bottom: 6px;
+    color: rgba(255,255,255,0.4);
+    transition: color 0.3s ease;
+}
+
+.flow-step::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0%;
+    background: white;
+    transition: width 0.4s ease;
+}
+
+.flow-step.active {
+    color: white;
+}
+
+.flow-step.active::after {
+    width: 100%;
+}
+
+/* ===============================
+   EMPTY / WAITING STATE
+   =============================== */
+
+#alpha-placeholder {
+    opacity: 0.35;
+    letter-spacing: 0.2em;
+    animation: breathe 3s ease-in-out infinite;
+    text-align: center;
+}
+
+
+@keyframes breathe {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+#loading::after {
+    content: '';
+    display: block;
+    margin-top: 6px;
+    height: 2px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, white, transparent);
+    animation: scan 1.2s linear infinite;
+}
+
+@keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ===============================
+   MICRO FEEDBACK
+   =============================== */
+
+button:active {
+    transform: translateY(1px);
+}
+
+#waveform-container:hover {
+    box-shadow: 0 0 40px rgba(255,255,255,0.08);
+}
+
+#piano-visualizer {
+    transition: box-shadow 0.4s ease;
+}
+
+#piano-visualizer:has(.active) {
+    box-shadow: inset 0 -10px 40px rgba(59,130,246,0.2);
+}
+
+/* ===============================
+   FOCUS MODE
+   =============================== */
+
+body.focus-mode .lg\:col-span-3 {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+}
+
+body.focus-mode header {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+header {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* ===============================
+   PROGRESSIVE DISCLOSURE
+   =============================== */
+
+.unlocked {
+    box-shadow: 0 0 30px rgba(255,255,255,0.15);
+    transition: box-shadow 0.4s ease;
+}
+
+/* ===============================
+   SOUND REACTIVE ACCENTS
+   =============================== */
+
+body.is-playing #piano-visualizer {
+    box-shadow: inset 0 -20px 60px rgba(59,130,246,0.25);
+}
