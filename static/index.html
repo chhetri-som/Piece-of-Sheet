@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Piece of SHEET — Guitar Transcription Toolkit</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-
   <script>
     tailwind.config = {
       theme: {
@@ -20,13 +20,15 @@
             panel: 'rgba(255,255,255,0.06)',
             border: 'rgba(255,255,255,0.12)',
             gloss: 'rgba(255,255,255,0.25)',
+            'tech-black': '#09090b',
+            'tech-card': 'rgba(255, 255, 255, 0.06)',
+            'tech-border': 'rgba(255, 255, 255, 0.12)',
           }
         }
       }
     }
   </script>
 
-  <!-- Audio / MIDI / Notation -->
   <script src="https://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
   <script src="https://unpkg.com/wavesurfer.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -38,16 +40,13 @@
 
 <body class="text-gray-300 selection:bg-white selection:text-black">
 
-  <!-- 🌌 HERO / FRONT PAGE -->
   <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
     <div class="hero-bg"></div>
-
     <div class="relative z-10 text-center max-w-4xl px-6">
       <h1 class="font-display text-[clamp(3rem,8vw,7rem)] text-white uppercase leading-none">
-        Piece<br/>
+        Piece<br />
         <span class="text-white/40">of SHEET</span>
       </h1>
-
       <p class="mt-6 text-sm uppercase tracking-[0.3em] text-white/60">
         Guitar Transcription Toolkit
       </p>
@@ -63,148 +62,122 @@
     </div>
   </section>
 
-  <!-- 🧠 APP SHELL (YOUR EXISTING TOOL) -->
   <main id="app-shell" class="min-h-screen opacity-0 translate-y-24 transition-all duration-1000">
     <div class="max-w-[1600px] mx-auto p-4 md:p-8 space-y-6">
-      <header class="border-b-2 border-white/10 pb-6 flex flex-col gap-4">
-        <!-- TOP ROW: TITLE + STATUS -->
-        <div class="flex flex-col md:flex-row justify-between items-end">
-          <div>
-            <h1 class="font-display text-7xl md:text-6xl text-white uppercase tracking-tight leading-none">
-              Guitar<br>
-              <span class="text-gray-600">Transcription</span>
-            </h1>
-
-            <!-- 🔹 GUIDED FLOW -->
-            <div id="guided-flow" class="mt-4 flex gap-6 text-xs uppercase tracking-wider">
-              <div class="flow-step active" data-step="upload">1 Upload</div>
-              <div class="flow-step" data-step="generate">2 Generate</div>
-              <div class="flow-step" data-step="explore">3 Explore</div>
-            </div>
-            <!-- MODE TOGGLE -->
-            <button
-              id="focus-toggle"
-              class="mt-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition"
-            >
-              Focus Mode
-            </button>
+      
+      <header class="border-b-2 border-white/10 pb-6 flex flex-col md:flex-row justify-between items-end">
+        <div>
+          <h1 class="font-display text-7xl md:text-6xl text-white uppercase tracking-tight leading-none">
+            Guitar<br><span class="text-gray-600">Transcription</span>
+          </h1>
+          <div id="guided-flow" class="mt-4 flex gap-6 text-xs uppercase tracking-wider">
+            <div class="flow-step active" data-step="upload">1 Upload</div>
+            <div class="flow-step" data-step="generate">2 Generate</div>
+            <div class="flow-step" data-step="explore">3 Explore</div>
           </div>
-          <!-- STATUS / PROCESSING -->
-          <div class="text-right hidden md:block">
-            <div class="font-mono text-xs text-gray-500 mb-1"></div>
-            <div
-              id="loading"
-              style="display:none;"
-              class="text-white font-bold animate-pulse bg-red-600 px-2 py-1 text-xs inline-block"
-            >
-              PROCESSING AUDIO DATA...
-            </div>
+          <button id="focus-toggle" class="mt-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition">
+            Focus Mode
+          </button>
+        </div>
+        <div class="text-right hidden md:block">
+          <div id="loading" style="display:none;" class="text-white font-bold animate-pulse bg-red-600 px-2 py-1 text-xs inline-block">
+            PROCESSING AUDIO DATA...
           </div>
         </div>
-
       </header>
+
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-        
+
         <div class="lg:col-span-3 flex flex-col gap-6">
-          
-          <div class="bg-tech-card border border-tech-border p-5 rounded-none">
+          <div class="bg-tech-card border border-tech-border p-5">
             <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-3">Input Source</label>
-            
             <input type="file" id="audio-file-input" accept="audio/*" class="hidden" />
-            
-            <button onclick="document.getElementById('audio-file-input').click()" 
+            <button onclick="document.getElementById('audio-file-input').click()"
               class="w-full h-32 border-2 border-dashed border-zinc-700 hover:border-white hover:bg-white/5 transition-all group flex flex-col items-center justify-center gap-2">
               <span class="text-2xl opacity-50 group-hover:opacity-100 transition-opacity">📂</span>
               <span class="font-mono text-xs uppercase text-gray-400 group-hover:text-white">Select Audio File</span>
             </button>
-
-            <button id="upload-button" disabled 
-              class="w-full mt-4 bg-white text-black font-display font-bold uppercase py-4 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed transition-all tracking-wider">
+            <button id="upload-button" disabled class="w-full mt-4 bg-white text-black font-display font-bold uppercase py-4 hover:bg-gray-200 disabled:opacity-20 transition-all tracking-wider">
               Generate Sheet
             </button>
           </div>
 
           <div id="transpose-container" style="display:none;" class="bg-tech-card border border-tech-border p-5 sticky top-6">
             <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-4">Transpose</label>
-            
-            <div class="flex items-center justify-between bg-white/40 border border-black/10 p-2 rounded-lg">
-              <button id="trans-down" class="w-12 h-12 bg-white/60 hover:bg-white text-black font-bold text-xl border border-black/10 transition-all rounded">-</button>
-              
+            <div class="flex items-center justify-between bg-white/10 border border-white/10 p-2 rounded-lg">
+              <button id="trans-down" class="w-10 h-10 bg-white/20 hover:bg-white text-black font-bold rounded">-</button>
               <div class="flex flex-col items-center">
-                  <span id="trans-display" class="font-display text-2xl text-black">0</span>
-                  <span class="text-[10px] font-mono text-gray-600 uppercase">Semitones</span>
+                <span id="trans-display" class="font-display text-2xl text-white">0</span>
+                <span class="text-[10px] font-mono text-gray-500 uppercase">Semitones</span>
               </div>
-              
-              <button id="trans-up" class="w-12 h-12 bg-white/60 hover:bg-white text-black font-bold text-xl border border-black/10 transition-all rounded">+</button>
+              <button id="trans-up" class="w-10 h-10 bg-white/20 hover:bg-white text-black font-bold rounded">+</button>
+            </div>
+          </div>
+
+          <div id="tempo-container" style="display:none;" class="bg-tech-card border border-tech-border p-5">
+            <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-4">Tempo</label>
+            <div class="flex items-center justify-between bg-white/10 border border-white/10 p-2 rounded-lg">
+              <button id="tempo-down" class="w-10 h-10 bg-white/20 hover:bg-white text-black font-bold rounded">-</button>
+              <div class="flex flex-col items-center">
+                <span id="tempo-display" class="font-display text-2xl text-white">1.0x</span>
+                <span class="text-[10px] font-mono text-gray-500 uppercase">Speed</span>
+              </div>
+              <button id="tempo-up" class="w-10 h-10 bg-white/20 hover:bg-white text-black font-bold rounded">+</button>
             </div>
           </div>
 
           <div class="bg-tech-card border border-tech-border p-5">
             <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-3">Playback</label>
-            
-            <button id="play-audio-button" disabled 
-              class="w-full border border-zinc-600 text-white font-bold py-3 tracking-wider hover:bg-zinc-800 disabled:opacity-20 transition-all text-sm uppercase mb-3">
+            <button id="play-audio-button" disabled class="w-full border border-zinc-600 text-white font-bold py-3 text-xs uppercase mb-3 hover:bg-zinc-800 transition-all">
               ▶ Play Source Audio
             </button>
-
-            <button id="play-midi-button" disabled 
-              class="w-full bg-white text-black font-bold py-3 tracking-wider hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed transition-all text-sm uppercase">
+            <button id="play-midi-button" disabled class="w-full bg-white text-black font-bold py-3 text-xs uppercase hover:bg-gray-200 transition-all">
               🎹 Play Generated MIDI
             </button>
+          </div>
+
+          <div class="bg-tech-card border border-tech-border p-5">
+            <label class="block font-display text-xs text-gray-500 uppercase tracking-widest mb-3">Downloads</label>
+            <div class="flex flex-col gap-2">
+              <div class="flex gap-2">
+                <a id="download-sheet-btn" href="#" download class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-center py-3 text-[10px] font-bold uppercase border border-zinc-600">📄 Sheet</a>
+                <a id="download-midi-btn" href="#" download class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-center py-3 text-[10px] font-bold uppercase border border-zinc-600">🎹 MIDI</a>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="lg:col-span-9 flex flex-col gap-6">
-          
           <div class="bg-tech-card border border-tech-border p-1 relative min-h-[140px] rounded-xl">
             <div class="absolute top-2 left-3 z-10">
-              <h2 id="waveform-heading" style="display:none;" class="text-[10px] font-mono font-bold bg-black/80 text-white px-2 py-1 border border-zinc-800 ">
-                AUDIO WAVEFORM
-              </h2>
+              <h2 id="waveform-heading" style="display:none;" class="text-[10px] font-mono font-bold bg-black/80 text-white px-2 py-1 border border-zinc-800 ">AUDIO WAVEFORM</h2>
             </div>
-            <div id="waveform-container" class="w-full h-32 opacity-80 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-crosshair"></div>
+            <div id="waveform-container" class="w-full h-32 opacity-80 cursor-crosshair"></div>
           </div>
 
-          <div class="relative bg-tech-card backdrop-blur-md border border-tech-border rounded-xl overflow-hidden min-h-[160px] flex items-end justify-center p-4">
-            <h2 id="piano-roll-heading" class="absolute top-2 left-3 z-10 text-[10px] font-mono font-bold bg-white text-black px-2 py-1">
-              LIVE VISUALIZER
-            </h2>
+          <div class="relative bg-tech-card backdrop-blur-md border border-tech-border rounded-xl min-h-[160px] flex items-end justify-center p-4">
+            <h2 id="piano-roll-heading" class="absolute top-2 left-3 z-10 text-[10px] font-mono font-bold bg-white text-black px-2 py-1">LIVE VISUALIZER</h2>
             <div id="piano-visualizer" class="flex w-full h-32 relative justify-center"></div>
           </div>
 
           <div class="bg-white text-black border-4 border-gray-200 overflow-hidden relative min-h-[500px] rounded-xl">
-
-            <!-- SHEET HEADER -->
             <div class="bg-gray-100 border-b border-gray-300 p-2 flex justify-between items-center">
-              <div class="flex gap-2 px-2">
-                <div class="w-3 h-3 rounded-full bg-zinc-300"></div>
-                <div class="w-3 h-3 rounded-full bg-zinc-300"></div>
-              </div>
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                Sheet Music View
-              </span>
+              <div class="flex gap-2 px-2"><div class="w-3 h-3 rounded-full bg-zinc-300"></div><div class="w-3 h-3 rounded-full bg-zinc-300"></div></div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sheet Music View</span>
             </div>
+            
+            <div id="verovio-container" style="width: 100%; height: 800px; overflow-y: scroll; background: white;"></div>
 
-            <!-- 🔹 WAITING STATE (MOVED UP) -->
-            <div
-              id="alpha-placeholder"
-              class="absolute inset-x-0 top-[56px] flex items-center justify-center
-                    text-gray-400 font-display text-2xl uppercase pointer-events-none"
-            >
-              Waiting for Data…
+            <div id="alpha-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-300 font-display text-4xl uppercase pointer-events-none">
+              Waiting for Data...
             </div>
-
-            <!-- VEROVIO -->
-            <div id="verovio-container" style="width: 100%; height: 800px; overflow-y: scroll;"></div>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
   </main>
 
   <script src="script.js"></script>
 </body>
 </html>
-
-
