@@ -81,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
             pageHeight: 2000,
             scale: 35,
             adjustPageHeight: true,
-            ignoreLayout: 1,
 
             // VISUAL CLEANUP OPTIONS
             font: 'Bravura',
@@ -636,3 +635,4 @@ if (focusBtn) {
             'Focus Mode';
     });
 }
+
