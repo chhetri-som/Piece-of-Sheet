@@ -562,19 +562,173 @@ function createPiano() {
 }
 createPiano();
 
+// --- GUITAR FRETBARD VISUALIZER ---
+const guitarContainer = document.getElementById('guitar-fretboard');
+const STRINGS = 6;
+const FRETS = 24;
+
+// Standard guitar tuning (high to low): E-B-G-D-A-E
+const STRING_TUNING = [64, 59, 55, 50, 45, 40]; // MIDI note numbers
+const STRING_NAMES = ['E', 'B', 'G', 'D', 'A', 'E']; // High to low
+
+
+// HELPER: GUITAR POSITION SOLVER
+function calculateBestPosition(midiPitch) {
+    let bestString = -1;
+    let bestFret = 999;
+
+    // Check all 6 strings to find valid positions
+    for (let s = 0; s < STRINGS; s++) {
+        const stringBasePitch = STRING_TUNING[s];
+        const fret = midiPitch - stringBasePitch;
+
+        // Only consider valid frets (0 to 24)
+        if (fret >= 0 && fret <= 24) {
+            // Heuristic: Strict preference for lower frets
+            if (fret < bestFret) {
+                bestFret = fret;
+                bestString = s;
+            }
+        }
+    }
+
+    // Return a unique key if a valid position was found
+    if (bestString !== -1) {
+        return `${bestString}-${bestFret}`; // Format: "StringIndex-FretIndex"
+    }
+    return null;
+}
+
+function createFretboard() {
+    if (!guitarContainer) return;
+    guitarContainer.innerHTML = '';
+
+    const fretboard = document.createElement('div');
+    fretboard.classList.add('fretboard');
+
+    // 1. Create Strings Container
+    const stringsContainer = document.createElement('div');
+    stringsContainer.classList.add('strings');
+
+    // CONFIGURATION FOR SPACING ( PERCENTAGES )
+    const startOffset = 3.5; // Start the Nut 3.5% from the left
+    const endOffset = 98;    // End the 24th fret at 98%
+    const usableWidth = endOffset - startOffset;
+    const spacingPerFret = usableWidth / FRETS; // Dynamically calculate width
+
+    // 2. Render Strings (High E at Top -> Low E at Bottom)
+    for (let i = STRINGS - 1; i >= 0; i--) {
+        const stringElement = document.createElement('div');
+        stringElement.classList.add('guitar-string');
+        stringElement.dataset.string = i;
+
+        // Label
+        const stringLabel = document.createElement('div');
+        stringLabel.classList.add('string-label');
+        stringLabel.textContent = STRING_NAMES[i];
+        stringElement.appendChild(stringLabel);
+
+        // Pre-generate Notes
+        for (let fret = 0; fret <= FRETS; fret++) {
+            const noteIndicator = document.createElement('div');
+            noteIndicator.classList.add('fret-note');
+            noteIndicator.dataset.string = i;
+            noteIndicator.dataset.fret = fret;
+            noteIndicator.dataset.pitch = STRING_TUNING[i] + fret;
+            noteIndicator._coordKey = `${i}-${fret}`;
+
+            // [UPDATED] Calculate LEFT position using Percentages
+            const fretPosPercent = startOffset + (fret * spacingPerFret);
+            noteIndicator.style.left = `${fretPosPercent}%`;
+            
+            noteIndicator.style.top = '50%'; 
+
+            stringElement.appendChild(noteIndicator);
+        }
+
+        stringsContainer.appendChild(stringElement);
+    }
+
+    // 3. Render Frets (Overlay)
+    for (let fret = 0; fret <= FRETS; fret++) {
+        const fretElement = document.createElement('div');
+        fretElement.classList.add('fret');
+        fretElement.dataset.fret = fret;
+
+        // [UPDATED] Calculate LEFT position using Percentages
+        const fretPosPercent = startOffset + (fret * spacingPerFret);
+        fretElement.style.left = `${fretPosPercent}%`;
+        
+        stringsContainer.appendChild(fretElement);
+
+        // Fret Numbers
+        if (fret > 0) {
+            const fretNumber = document.createElement('div');
+            fretNumber.classList.add('fret-number');
+            fretNumber.textContent = fret;
+            // [UPDATED] Position
+            fretNumber.style.left = `${fretPosPercent}%`;
+            stringsContainer.appendChild(fretNumber);
+        }
+
+        // Inlays
+        if ([3, 5, 7, 9, 12, 15, 17, 19, 21, 24].includes(fret)) {
+            const inlay = document.createElement('div');
+            inlay.classList.add('fret-inlay');
+            // [UPDATED] Position
+            inlay.style.left = `${fretPosPercent}%`;
+            
+            inlay.style.top = '50%'; 
+
+            if (fret === 12 || fret === 24) {
+                // Double dots for 12th and 24th fret
+                inlay.style.top = '35%';
+                const inlayBottom = inlay.cloneNode(true);
+                inlayBottom.style.top = '65%';
+                stringsContainer.appendChild(inlayBottom);
+            }
+            
+            stringsContainer.appendChild(inlay);
+        }
+    }
+
+    // Nut
+    const nut = document.createElement('div');
+    nut.classList.add('nut');
+    // [UPDATED] Position Nut at the start offset
+    nut.style.left = `${startOffset}%`; 
+    stringsContainer.appendChild(nut);
+
+    fretboard.appendChild(stringsContainer);
+    guitarContainer.appendChild(fretboard);
+}
+
+createFretboard();
+
 let animationFrameId;
 
+//  UPDATED VISUALIZER LOOP
 function startVisualizer(midiData, startTime, audioContext) {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    const keys = document.querySelectorAll('.piano-key');
+
+    // Cache DOM elements
+    const pianoKeys = document.querySelectorAll('.piano-key');
+    const fretNotes = document.querySelectorAll('.fret-note');
+
+    // Pre-calculate lookup keys for faster rendering
+    // Assign a "coordinate" property to each DOM element for O(1) matching
+    fretNotes.forEach(el => {
+        el._coordKey = `${el.dataset.string}-${el.dataset.fret}`;
+    });
 
     function draw() {
         const currentTime = audioContext.currentTime - startTime;
 
-        // FINISH DETECTION
-        // Add a small buffer (e.g., 0.5s) to ensure last note plays out
+        // Cleanup if finished
         if (currentTime > (midiData.duration / playbackRate) + 0.5) {
-            keys.forEach(k => k.classList.remove('active'));
+            pianoKeys.forEach(k => k.classList.remove('active'));
+            fretNotes.forEach(f => f.classList.remove('active'));
+            
             midiPlayerState = 'stopped';
             playMidiBtn.innerText = "🎹 Play Generated MIDI";
             playMidiBtn.disabled = false;
@@ -582,24 +736,36 @@ function startVisualizer(midiData, startTime, audioContext) {
             return;
         }
 
-        const activeNotes = new Set();
+        // 1. Identify Active MIDI Notes
+        const activeMidiNotes = new Set();
         midiData.tracks.forEach(track => {
             track.notes.forEach(note => {
-                // Adjust timings for playbackRate
                 const start = note.time / playbackRate;
                 const end = (note.time + note.duration) / playbackRate;
-                
                 if (currentTime >= start && currentTime < end) {
-                    // Apply transposition to visuals too
-                    activeNotes.add(note.midi + transpositionValue);
+                    activeMidiNotes.add(note.midi + transpositionValue);
                 }
             });
         });
 
-        keys.forEach(key => {
+        // 2. Solve Guitar Positions (The Semantic Fix)
+        // Convert active pitches -> specific (string, fret) coordinates
+        const activeGuitarCoords = new Set();
+        activeMidiNotes.forEach(pitch => {
+            const coord = calculateBestPosition(pitch);
+            if (coord) activeGuitarCoords.add(coord);
+        });
+
+        // 3. Render Piano (Standard Logic)
+        pianoKeys.forEach(key => {
             const noteNum = parseInt(key.dataset.note);
-            if (activeNotes.has(noteNum)) key.classList.add('active');
-            else key.classList.remove('active');
+            key.classList.toggle('active', activeMidiNotes.has(noteNum));
+        });
+
+        // 4. Render Fretboard (Semantic Logic)
+        // Only light up the specific calculated coordinates
+        fretNotes.forEach(noteEl => {
+            noteEl.classList.toggle('active', activeGuitarCoords.has(noteEl._coordKey));
         });
 
         animationFrameId = requestAnimationFrame(draw);
@@ -635,4 +801,3 @@ if (focusBtn) {
             'Focus Mode';
     });
 }
-
