@@ -74,8 +74,8 @@ https://github.com/user-attachments/assets/a378beaf-3580-4fe0-814d-2eb5408bb73b
   </div>
 
 <h3>tools</h3>
-<div align="center">
-  <img src="./assets/tools.png" alt="demo4">
+<div align="left">
+  <img src="./assets/tools.png" alt="demo4" width="60%">
   <br>
   </div>
   
