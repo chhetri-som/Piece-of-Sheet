@@ -22,6 +22,7 @@
 body {
     background: #EEAECA;
     background: radial-gradient(circle, rgba(219, 234, 254, 0.95) 0%, rgba(147, 197, 253, 0.9) 100%);
+    /*radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);*/
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -163,6 +164,159 @@ h1.text-white {
 }
 
 /* ===============================
+   4.1. GUITAR FRETBARD VISUALIZER
+   =============================== */
+#guitar-fretboard {
+    position: relative;
+    background: linear-gradient(180deg, #D2691E 0%, #DEB887 50%, #D2691E 100%);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 3px solid #8B4513;
+}
+
+/* Fretboard container */
+.fretboard {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(90deg, 
+        rgba(210, 105, 30, 0.8) 0%, 
+        rgba(222, 184, 135, 0.8) 25%, 
+        rgba(210, 105, 30, 0.8) 50%, 
+        rgba(222, 184, 135, 0.8) 75%, 
+        rgba(210, 105, 30, 0.8) 100%);
+}
+
+/* Wood texture overlay */
+.fretboard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* String container */
+.strings {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 10px 0px 20px 0px;
+    box-sizing: border-box;
+}
+
+/* Individual string */
+.guitar-string {
+    position: relative;
+    height: 2px;
+    background: linear-gradient(90deg, #C0C0C0, #808080, #C0C0C0);
+    z-index: 2;
+    width: 100%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Fret lines */
+.fret {
+    position: absolute;
+    top: 16.67%; /* Start at first string position */
+    bottom: 16.67%; /* End at last string position */
+    width: 6px; /* Same width as nut */
+    height: 60%;
+    background: linear-gradient(90deg, #C0C0C0, #808080);
+    z-index: 1;
+    transform: translateX(-50%);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Nut (first fret position) */
+.nut {
+    position: absolute;
+    top: 16.67%; /* Start at first string position */
+    bottom: 16.67%; /* End at last string position */
+    width: 6px;
+    height: 60%;
+    background: linear-gradient(90deg, #F5DEB3, #DEB887);
+    z-index: 3;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Fret inlays (dots) */
+.fret-inlay {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle, #2C2C2C, #1A1A1A);
+    border-radius: 50%;
+    z-index: 1;
+    transform: translate(-50%, -50%) translateY(-4px); /* Shift up by 2px */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Fret numbers */
+.fret-number {
+    position: absolute;
+    bottom: 2px;
+    font-size: 10px;
+    color: #FFF;
+    font-family: monospace;
+    transform: translateX(-50%);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 5;
+}
+
+/* Note indicators on fretboard */
+.fret-note {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FF6B35, #D84315);
+    border: 2px solid #BF360C;
+    z-index: 4;
+    transform: translate(-50%, -50%);
+    transition: all 0.1s ease;
+    opacity: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.fret-note.active {
+    opacity: 1;
+    background: radial-gradient(circle, #FFD54F, #FF6F00);
+    box-shadow: 0 0 12px #FF6F00, 0 2px 4px rgba(0, 0, 0, 0.3);
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* String labels */
+.string-label {
+    position: absolute;
+    left: 8px;
+    font-size: 11px;
+    color: #FFF;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transform: translateY(-50%);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 5;
+}
+
+/* ===============================
    5. ADVANCED UI: HERO & ANIMATIONS
    =============================== */
 
@@ -192,7 +346,7 @@ h1.text-white {
 .scroll-indicator {
     width: 24px;
     height: 48px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(30, 41, 59, 0.3);
     border-radius: 999px;
     position: relative;
 }
@@ -203,7 +357,7 @@ h1.text-white {
     left: 50%;
     width: 4px;
     height: 4px;
-    background: white;
+    background: #1e293b;
     border-radius: 50%;
     transform: translateX(-50%);
     animation: scrollDot 2s infinite;
@@ -264,7 +418,7 @@ body.reveal-app #app-shell {
 .flow-step {
     position: relative;
     padding-bottom: 6px;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(30, 41, 59, 0.7);
     transition: color 0.3s ease;
 }
 
@@ -280,11 +434,12 @@ body.reveal-app #app-shell {
 }
 
 .flow-step.active {
-    color: white;
+    color: #1e293b;
 }
 
 .flow-step.active::after {
     width: 100%;
+    background: #1e293b;
 }
 
 /* Empty / Waiting State */
@@ -358,4 +513,3 @@ header {
 body.is-playing #piano-visualizer {
     box-shadow: inset 0 -20px 60px rgba(59, 130, 246, 0.25);
 }
-
